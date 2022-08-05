@@ -15,7 +15,7 @@ from transformers.optimization import get_linear_schedule_with_warmup
 from config import CFG
 from dataset import create_dataloader
 from models import create_model, create_tokenizer
-from metrics import get_f1_score, get_r2_score, get_score
+from metrics import get_score
 import torch.nn.functional as F
 from utils import get_final_prediction
 
