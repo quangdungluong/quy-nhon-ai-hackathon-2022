@@ -6,8 +6,8 @@ import pandas as pd
 from sklearn.model_selection import KFold
 
 from config import CFG
-from utils import seed_everything
 from train_utils import train_fold
+from utils import seed_everything
 
 warnings.filterwarnings("ignore")
 import transformers

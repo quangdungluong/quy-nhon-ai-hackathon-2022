@@ -1,35 +1,37 @@
 """
-Utility Functions
+Training Utility Functions
 """
 import os
-import random
 
 import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.optim as optim
+from torch.optim import Optimizer
+from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers.optimization import get_linear_schedule_with_warmup
 
 from config import CFG
 from dataset import create_dataloader
-from models import create_model, create_tokenizer
 from metrics import get_score
-import torch.nn.functional as F
+from models import create_model, create_tokenizer
 from utils import get_final_prediction
 
-def train_epoch(model, dataloader, optimizer, scheduler):
-    """train 1 epoch
+
+def train_epoch(model:nn.Module, dataloader:DataLoader, optimizer:Optimizer, scheduler):
+    """Training 1 epoch
 
     Args:
-        model (_type_): model
-        dataloader (_type_): dataloader
-        optimizer (_type_): optimizer
-        scheduler (_type_): scheduler
+        model (nn.Module): model
+        dataloader (DataLoader): dataloader
+        optimizer (Optimizer): optimizer
+        scheduler (optimization): scheduler
 
     Returns:
-        _type_: loss, score
+        _type_: loss, score dictionary, final competition score
     """
     model = model.train()
     losses = []
@@ -44,11 +46,11 @@ def train_epoch(model, dataloader, optimizer, scheduler):
         
         optimizer.zero_grad()
         outputs = model(input_ids=input_ids, attention_mask=attention_mask)
-        # preds = get_final_prediction(outputs.squeeze().detach().cpu().numpy())
 
         loss = F.binary_cross_entropy_with_logits(outputs, targets.float())
         loss = loss.mean()
         losses.append(loss.item())
+
         targets = targets.squeeze().detach().cpu().numpy()
         labels = np.atleast_2d(targets) if labels is None else np.concatenate([labels, np.atleast_2d(targets)])
         outputs = outputs.squeeze().detach().cpu().numpy()
@@ -66,15 +68,15 @@ def train_epoch(model, dataloader, optimizer, scheduler):
         final_score += score["competition_score"] / len(score_dict)
     return loss, score_dict, final_score
 
-def eval_model(model, dataloader):
+def eval_model(model:nn.Module, dataloader:DataLoader):
     """Evaluation after 1 training epoch
 
     Args:
-        model (_type_): model
-        dataloader (_type_): dataloader
+        model (nn.Module): model
+        dataloader (DataLoader): dataloader
 
     Returns:
-        _type_: loss, score
+        _type_: loss, score dictionary, final competition score
     """
     model = model.eval()
     losses = []
@@ -106,7 +108,7 @@ def eval_model(model, dataloader):
     return loss, score_dict, final_score
 
 def train_fold(model_name:str, model_type:str, fold:int, train_fold_df:pd.DataFrame, val_fold_df:pd.DataFrame, oof_file:pd.DataFrame, model_ckpt:str, save_last=False) -> pd.DataFrame:
-    """_summary_
+    """Training 1 fold
 
     Args:
         model_name (str): model_name

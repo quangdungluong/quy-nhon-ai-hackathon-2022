@@ -1,9 +1,18 @@
+"""
+Implement competition metrics
+Sorry for this very silly, dummy code. Too much magic number :((
+"""
 import numpy as np
 from sklearn.metrics import f1_score, precision_score, recall_score
-from utils import sigmoid
+
+from utils import get_label, get_prediction
+
 
 def get_r2_score(y_true: np.array, y_pred: np.array) -> float:
-    """Calculate r2 score
+    """Calculate r2 score \\
+    R2 = 1 - RSS/K \\
+    RSS = residual sum of squares = sigma [(y_hat - y) ^ 2] \\
+    K = total sum of squares of max distance = n * (max_sentiment - min_sentiment) ^ 2 \\
 
     Args:
         y_true (np.array): ground truth
@@ -12,7 +21,7 @@ def get_r2_score(y_true: np.array, y_pred: np.array) -> float:
     Returns:
         float: r2 score
     """
-    assert len(y_true) == len(y_pred)
+    assert y_true.shape == y_pred.shape, f"y_true and y_pred must have the same shape, y_true has shape {y_true.shape} while y_pred has shape {y_pred.shape}"
     y_true_ = y_true
     y_pred_ = y_pred
     max_sentiment = 5
@@ -29,7 +38,8 @@ def get_r2_score(y_true: np.array, y_pred: np.array) -> float:
         return 1 # competition rules
 
 def get_precision_recall_f1_score(labels:np.array, predictions:np.array) -> tuple:
-    """Calculate precision, recall and f1 score
+    """Calculate precision, recall and f1 score \\
+    [0] -> 0 and [1-5] -> 1
 
     Args:
         labels (np.array): grounth truth
@@ -42,38 +52,17 @@ def get_precision_recall_f1_score(labels:np.array, predictions:np.array) -> tupl
     predictions_ = predictions > 0
     return (precision_score(labels_, predictions_), recall_score(labels_, predictions_), f1_score(labels_, predictions_))
 
-def get_label(y_true: np.array) -> np.array:
-    labels = np.array([0, 0, 0, 0, 0, 0])
-    for i in range(6):
-        for j in range(5):
-            if y_true[5*i+j] == 1:
-                labels[i] = j + 1
-    return labels
-
-def get_prediction(outputs:np.array, threshold=0.5)->np.array:
-    """get prediction from logits
+def report_score(labels:np.array, predictions:np.array) -> dict:
+    """Get the score: precision, recall, f1 score, r2 score and competition score \\
+    Score of 1 aspect
 
     Args:
-        outputs (np.array): outputs from model, shape: [1, 30]
-        threshold (float, optional): sigmoid threshold. Defaults to 0.5.
+        labels (np.array): ground truth, shape: [num_examples, 1]
+        predictions (np.array): predictions, shape: [num_examples, 1]
 
     Returns:
-        np.array: predictions
+        dict: a score dictionary {precision, recall, f1_score, r2_score, competition_score} of 1 aspect
     """
-    outputs = sigmoid(outputs)
-    result = np.array([0, 0, 0, 0, 0, 0])
-    for i in range(6):
-        best_score = -999
-        index = -1
-        for j in range(5):
-            if outputs[5*i+j] > best_score:
-                best_score = outputs[5*i+j]
-                index = j
-        if best_score > threshold:
-            result[i] = index + 1
-    return result
-
-def report_score(labels, predictions) -> dict:
     score = {}
     score["precision"], score["recall"], score["f1_score"] = get_precision_recall_f1_score(labels, predictions)
     score["r2_score"] = get_r2_score(labels, predictions)
@@ -88,7 +77,7 @@ def get_score(y_true: np.array, y_pred: np.array) -> dict:
         y_pred (np.array): shape: [n_examples, 30], logits, before sigmoid
 
     Returns:
-        dict: score of each aspect
+        dict: a score dictionary of each aspect
     """
     score = {}
     preds = []
@@ -96,6 +85,7 @@ def get_score(y_true: np.array, y_pred: np.array) -> dict:
     for i in range(len(y_true)):
         preds.append(get_prediction(y_pred[i]))
         labels.append(get_label(y_true[i]))
+        
     preds = np.array(preds)
     labels = np.array(labels)
     # np.save("preds.npy", preds)
