@@ -189,7 +189,7 @@ def train_fold(model_name:str, model_type:str, fold:int, train_fold_df:pd.DataFr
     # logits is a list has num_examples len and each is a np.array of size (30, )
     predictions, probs = get_final_prediction(logits)
     
-    oof_file.loc[val_fold_df.index, ["giai_tri","luu_tru","nha_hang","an_uong","di_chuyen","mua_sam"]] = predictions
+    oof_file.loc[val_fold_df.index, ["giai_tri_prediction","luu_tru_prediction","nha_hang_prediction","an_uong_prediction","di_chuyen_prediction","mua_sam_prediction"]] = predictions
     aspects = ["giai_tri","luu_tru","nha_hang","an_uong","di_chuyen","mua_sam"]
     for aspect in aspects:
         oof_file.loc[val_fold_df.index, [f'{aspect}_1', f'{aspect}_2', f'{aspect}_3', f'{aspect}_4', f'{aspect}_5']] = probs[aspect]
