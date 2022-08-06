@@ -102,3 +102,5 @@ if __name__ == "__main__":
     #     os.makedirs(args.model_ckpt)
     if not os.path.exists(args.output_path):
         os.makedirs(args.output_path)
+
+    main(args)
