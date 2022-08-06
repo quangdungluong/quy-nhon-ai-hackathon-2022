@@ -69,7 +69,7 @@ def get_prediction(outputs:np.array, threshold=0.5)->np.array:
             if outputs[5*i+j] > best_score:
                 best_score = outputs[5*i+j]
                 index = j
-        if best_score > threshold:
+        if best_score >= threshold:
             result[i] = index + 1
     return result
 
