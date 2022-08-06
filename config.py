@@ -10,7 +10,7 @@ class CFG:
     seed = 42
     num_labels = 6*5 # 6 aspects and 5 ratings for each
     num_folds = 5
-    train_folds = [0, 1, 2, 3, 4, 5]
+    train_folds = [0, 1, 2, 3, 4]
     batch_size = 4
     lr = 1e-5
     weight_decay = 0.01
