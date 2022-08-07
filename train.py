@@ -13,10 +13,16 @@ warnings.filterwarnings("ignore")
 import transformers
 
 transformers.logging.set_verbosity_error()
+from vncorenlp import VnCoreNLP
 
 def main(args):
     train_df = pd.read_csv(args.train_path)
-
+    is_segmented = False
+    if args.rdrsegmenter_path is not None:
+        is_segmented = True
+        # rdrsegmenter_path = "/kaggle/working/VnCoreNLP/VnCoreNLP-1.1.1.jar"
+        rdrsegmenter = VnCoreNLP(args.rdrsegmenter_path, annotators="wseg", max_heap_size='-Xmx500m') 
+        train_df["Review_segmented"] = train_df["Review"].apply(lambda x: ' '.join([' '.join(sent) for sent in rdrsegmenter.tokenize(x)]))
     # Split kfold
     kfold = KFold(n_splits=CFG.num_folds,
                             shuffle=True, random_state=CFG.seed)
@@ -30,7 +36,7 @@ def main(args):
     for fold in CFG.train_folds:
         train_fold_df = folds[folds['fold'] != fold]
         val_fold_df = folds[folds['fold'] == fold]
-        oof_file = train_fold(args.model_name, args.model_type, fold, train_fold_df, val_fold_df, oof_file, args.model_ckpt)
+        oof_file = train_fold(args.model_name, args.model_type, fold, train_fold_df, val_fold_df, oof_file, args.model_ckpt, is_segmented)
 
     # save off_file
     oof_file.to_csv(os.path.join(args.output_path, f"oof.csv"), index=False, encoding="utf-8-sig")
@@ -60,6 +66,7 @@ if __name__ == "__main__":
     parser.add_argument("--num_epochs", type=int, default=None, help="change number of epochs")
     parser.add_argument("--lr", type=float, default=None, help="change learning rate")
     parser.add_argument("--dropout", type=float, default=None, help="change hidden dropout probability")
+    parser.add_argument("--rdrsegmenter_path", type=str, default=None, help="rdrsegmenter path")
     args = parser.parse_args()
 
     print(f'Seed {CFG.seed}')
