@@ -107,7 +107,7 @@ def eval_model(model:nn.Module, dataloader:DataLoader):
         final_score += score["competition_score"] / len(score_dict)
     return loss, score_dict, final_score
 
-def train_fold(model_name:str, model_type:str, fold:int, train_fold_df:pd.DataFrame, val_fold_df:pd.DataFrame, oof_file:pd.DataFrame, model_ckpt:str, save_last=False) -> pd.DataFrame:
+def train_fold(model_name:str, model_type:str, fold:int, train_fold_df:pd.DataFrame, val_fold_df:pd.DataFrame, oof_file:pd.DataFrame, model_ckpt:str, is_segmented=False, save_last=False) -> pd.DataFrame:
     """Training 1 fold
 
     Args:
@@ -133,8 +133,8 @@ def train_fold(model_name:str, model_type:str, fold:int, train_fold_df:pd.DataFr
     tokenizer = create_tokenizer(model_name)
     
     # Create dataloader
-    train_dataloader = create_dataloader(train_fold_df, tokenizer, CFG.batch_size, is_train=True)
-    val_dataloader = create_dataloader(val_fold_df, tokenizer, CFG.batch_size, is_train=False)
+    train_dataloader = create_dataloader(train_fold_df, tokenizer, CFG.batch_size, is_train=True, is_segmented=is_segmented)
+    val_dataloader = create_dataloader(val_fold_df, tokenizer, CFG.batch_size, is_train=False, is_segmented=is_segmented)
     
     # Create optimizer, scheduler, loss function
     optimizer = optim.AdamW(model.parameters(), lr=CFG.lr)

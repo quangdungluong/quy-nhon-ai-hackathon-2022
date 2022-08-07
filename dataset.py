@@ -51,7 +51,7 @@ class HackathonDataset(Dataset):
         data['attention_mask']: torch.Size([batch_size, max_len])
         targets: torch.Size([batch_size, num_labels])
     '''
-    def __init__(self, df: DataFrame, tokenizer: Tokenizer, is_label=True) -> None:
+    def __init__(self, df: DataFrame, tokenizer: Tokenizer, is_label=True, is_segmented=False) -> None:
         """init
 
         Args:
@@ -63,7 +63,10 @@ class HackathonDataset(Dataset):
         self.df = df
         # reset index to avoid error when __getitem__
         self.df = self.df.reset_index()
-        self.texts = df["Review"].values
+        if is_segmented:
+            self.texts = df["Review_segmented"].values
+        else:
+            self.texts = df["Review"].values
         self.tokenizer = tokenizer
         self.is_label = is_label
         self.aspects = ["giai_tri","luu_tru","nha_hang","an_uong","di_chuyen","mua_sam"]
@@ -86,7 +89,7 @@ class HackathonDataset(Dataset):
             return encoding, torch.tensor(labels, dtype=torch.float)
         return encoding
     
-def create_dataloader(df: DataFrame, tokenizer: Tokenizer, batch_size: int, is_label=True, is_train=True) -> DataLoader:
+def create_dataloader(df: DataFrame, tokenizer: Tokenizer, batch_size: int, is_label=True, is_train=True, is_segmented=False) -> DataLoader:
     """create dataloader
 
     Args:
@@ -99,5 +102,5 @@ def create_dataloader(df: DataFrame, tokenizer: Tokenizer, batch_size: int, is_l
     Returns:
         DataLoader: return dataloader
     """
-    dataset = HackathonDataset(df, tokenizer, is_label)
+    dataset = HackathonDataset(df, tokenizer, is_label, is_segmented)
     return DataLoader(dataset, batch_size=batch_size, shuffle=True if is_train else False, num_workers=2)
