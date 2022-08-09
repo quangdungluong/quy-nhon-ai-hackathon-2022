@@ -69,6 +69,7 @@ if __name__ == "__main__":
     parser.add_argument("--rdrsegmenter_path", type=str, default=None, help="rdrsegmenter path")
     parser.add_argument("--train_folds", nargs='+', type=int, default=None, help="choose train folds")
     parser.add_argument("--scheduler_type", type=str, default="cosine", help="choose scheduler types")
+    parser.add_argument("--increment_dropout_prob", type=float, default=0.1, help="increment_dropout_prob")
     args = parser.parse_args()
 
     print(f'Seed {CFG.seed}')
@@ -88,7 +89,8 @@ if __name__ == "__main__":
             train_folds.append(fold)
         CFG.train_folds = train_folds
     CFG.scheduler_type = args.scheduler_type
-
+    CFG.increment_dropout_prob = args.increment_dropout_prob
+    
     if not os.path.exists(args.model_ckpt):
         os.makedirs(args.model_ckpt)
     if not os.path.exists(args.output_path):
