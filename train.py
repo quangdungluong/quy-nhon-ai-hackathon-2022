@@ -67,6 +67,7 @@ if __name__ == "__main__":
     parser.add_argument("--lr", type=float, default=None, help="change learning rate")
     parser.add_argument("--dropout", type=float, default=None, help="change hidden dropout probability")
     parser.add_argument("--rdrsegmenter_path", type=str, default=None, help="rdrsegmenter path")
+    parser.add_argument("--train_folds", nargs='+', type=int, default=None, help="choose train folds")
     args = parser.parse_args()
 
     print(f'Seed {CFG.seed}')
@@ -80,6 +81,11 @@ if __name__ == "__main__":
         CFG.lr = args.lr
     if args.dropout is not None:
         CFG.hidden_dropout_prob = args.dropout
+    if args.train_folds is not None:
+        train_folds = []
+        for fold in args.train_folds:
+            train_folds.append(fold)
+        CFG.train_folds = train_folds
 
     if not os.path.exists(args.model_ckpt):
         os.makedirs(args.model_ckpt)
