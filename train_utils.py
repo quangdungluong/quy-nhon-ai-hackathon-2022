@@ -136,9 +136,16 @@ def train_fold(model_name:str, model_type:str, fold:int, train_fold_df:pd.DataFr
     train_dataloader = create_dataloader(train_fold_df, tokenizer, CFG.batch_size, is_train=True, is_segmented=is_segmented)
     val_dataloader = create_dataloader(val_fold_df, tokenizer, CFG.batch_size, is_train=False, is_segmented=is_segmented)
     
+    param_optimizer = list(model.named_parameters())
+    no_decay = ['bias', 'LayerNorm.bias', 'LayerNorm.weight']
+    optimizer_grouped_parameters = [
+        {'params': [p for n, p in param_optimizer if not any(nd in n for nd in no_decay)], 'weight_decay': 0.01},
+        {'params': [p for n, p in param_optimizer if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
+    ]
     # Create optimizer, scheduler, loss function
-    optimizer = optim.AdamW(model.parameters(), lr=CFG.lr)
-    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=0, num_training_steps=len(train_dataloader)*CFG.num_epochs)
+    # optimizer = optim.AdamW(model.parameters(), lr=CFG.lr)
+    optimizer = optim.AdamW(optimizer_grouped_parameters, lr=CFG.lr, correct_bias=False)
+    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=100, num_training_steps=len(train_dataloader)*CFG.num_epochs)
     
     # Init to save best model
     best_score = -999

@@ -41,7 +41,7 @@ if __name__ == "__main__":
     for threshold in thresholds:
         sub_score = {}
         predictions = convert_probs_to_label(prediction_probs, threshold)
-        print(predictions.shape)
+        # print(predictions.shape)
         for i in range(6):
             sub_score[aspects[i]] = report_score(predictions[:,i], labels[:,i])
         final_score = 0
