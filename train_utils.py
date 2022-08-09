@@ -144,7 +144,7 @@ def train_fold(model_name:str, model_type:str, fold:int, train_fold_df:pd.DataFr
     ]
     # Create optimizer, scheduler, loss function
     # optimizer = optim.AdamW(model.parameters(), lr=CFG.lr)
-    optimizer = optim.AdamW(optimizer_grouped_parameters, lr=CFG.lr, correct_bias=False)
+    optimizer = optim.AdamW(optimizer_grouped_parameters, lr=CFG.lr)
     scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=100, num_training_steps=len(train_dataloader)*CFG.num_epochs)
     
     # Init to save best model
