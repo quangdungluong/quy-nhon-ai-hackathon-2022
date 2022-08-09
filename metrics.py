@@ -92,5 +92,5 @@ def get_score(y_true: np.array, y_pred: np.array) -> dict:
     # np.save("labels.npy", labels)
     aspects = ["giai_tri", "luu_tru", "nha_hang", "an_uong", "di_chuyen", "mua_sam"]
     for i in range(6):
-        score[aspects[i]] = report_score(preds[:,i], labels[:,i])
+        score[aspects[i]] = report_score(labels[:,i], preds[:,i])
     return score
