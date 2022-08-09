@@ -12,6 +12,9 @@ class CFG:
     num_folds = 5
     train_folds = [0, 1, 2, 3, 4]
     batch_size = 4
+    scheduler_type = "cosine" # ["linear", "cosine"]
+    num_cycles = 0.5
+    num_warmup_steps = 100
     lr = 1e-5
     weight_decay = 0.01
     num_epochs = 15

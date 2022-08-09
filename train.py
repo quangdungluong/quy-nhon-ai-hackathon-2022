@@ -36,7 +36,7 @@ def main(args):
     for fold in CFG.train_folds:
         train_fold_df = folds[folds['fold'] != fold]
         val_fold_df = folds[folds['fold'] == fold]
-        oof_file = train_fold(args.model_name, args.model_type, fold, train_fold_df, val_fold_df, oof_file, args.model_ckpt, is_segmented)
+        oof_file = train_fold(args.model_name, args.model_type, CFG.scheduler_type, fold, train_fold_df, val_fold_df, oof_file, args.model_ckpt, is_segmented)
 
     # save off_file
     oof_file.to_csv(os.path.join(args.output_path, f"oof.csv"), index=False, encoding="utf-8-sig")
@@ -68,6 +68,7 @@ if __name__ == "__main__":
     parser.add_argument("--dropout", type=float, default=None, help="change hidden dropout probability")
     parser.add_argument("--rdrsegmenter_path", type=str, default=None, help="rdrsegmenter path")
     parser.add_argument("--train_folds", nargs='+', type=int, default=None, help="choose train folds")
+    parser.add_argument("--scheduler_type", type=str, default="cosine", help="choose scheduler types")
     args = parser.parse_args()
 
     print(f'Seed {CFG.seed}')
@@ -86,6 +87,7 @@ if __name__ == "__main__":
         for fold in args.train_folds:
             train_folds.append(fold)
         CFG.train_folds = train_folds
+    CFG.scheduler_type = args.scheduler_type
 
     if not os.path.exists(args.model_ckpt):
         os.makedirs(args.model_ckpt)

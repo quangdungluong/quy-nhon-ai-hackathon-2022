@@ -12,7 +12,7 @@ import torch.optim as optim
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from transformers.optimization import get_linear_schedule_with_warmup
+from transformers.optimization import get_linear_schedule_with_warmup, get_cosine_schedule_with_warmup
 
 from config import CFG
 from dataset import create_dataloader
@@ -107,12 +107,13 @@ def eval_model(model:nn.Module, dataloader:DataLoader):
         final_score += score["competition_score"] / len(score_dict)
     return loss, score_dict, final_score
 
-def train_fold(model_name:str, model_type:str, fold:int, train_fold_df:pd.DataFrame, val_fold_df:pd.DataFrame, oof_file:pd.DataFrame, model_ckpt:str, is_segmented=False, save_last=False) -> pd.DataFrame:
+def train_fold(model_name:str, model_type:str, scheduler_type:str, fold:int, train_fold_df:pd.DataFrame, val_fold_df:pd.DataFrame, oof_file:pd.DataFrame, model_ckpt:str, is_segmented=False, save_last=False) -> pd.DataFrame:
     """Training 1 fold
 
     Args:
         model_name (str): model_name
         model_type (str): model_type
+        scheduler_type (str): scheduler type
         aspect (str): aspect for training
         fold (int): fold to train
         train_fold_df (pd.DataFrame): train fold dataframe
@@ -145,7 +146,10 @@ def train_fold(model_name:str, model_type:str, fold:int, train_fold_df:pd.DataFr
     # Create optimizer, scheduler, loss function
     # optimizer = optim.AdamW(model.parameters(), lr=CFG.lr)
     optimizer = optim.AdamW(optimizer_grouped_parameters, lr=CFG.lr)
-    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=100, num_training_steps=len(train_dataloader)*CFG.num_epochs)
+    if scheduler_type == "linear":
+        scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=CFG.num_warmup_steps, num_training_steps=len(train_dataloader)*CFG.num_epochs)
+    else:
+        scheduler = get_cosine_schedule_with_warmup(optimizer, num_warmup_steps=CFG.num_warmup_steps, num_training_steps=len(train_dataloader)*CFG.num_epochs, num_cycles=CFG.num_cycles)
     
     # Init to save best model
     best_score = -999
