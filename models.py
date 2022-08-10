@@ -122,18 +122,6 @@ class ElectraClassification(nn.Module):
         cls_output = torch.cat((outputs[1][-1][:,0, ...],outputs[1][-2][:,0, ...], outputs[1][-3][:,0, ...], outputs[1][-4][:,0, ...]),-1)
         outputs = self.classifier(cls_output)
         return outputs
-    
-class PhoBertClassification(nn.Module):
-    def __init__(self, model, model_ckpt) -> None:
-        super().__init__()
-        self.model = model.from_pretrained(model_ckpt)
-        self.classifier = nn.Linear(4*self.model.config.hidden_size, CFG.num_labels)
-        
-    def forward(self, input_ids, attention_mask):
-        outputs = self.model(input_ids=input_ids, attention_mask=attention_mask, output_hidden_states=True)
-        cls_output = torch.cat((outputs[2][-1][:,0, ...],outputs[2][-2][:,0, ...], outputs[2][-3][:,0, ...], outputs[2][-4][:,0, ...]),-1)
-        outputs = self.classifier(cls_output)
-        return outputs
 
 class MultiDropModel(nn.Module):
     def __init__(self, model, model_ckpt):
@@ -158,6 +146,26 @@ class MultiDropModel(nn.Module):
         
         return outputs
 
+class DropCatModel(nn.Module):
+    def __init__(self, model, model_ckpt):
+        super(DropCatModel, self).__init__()
+
+        self.model = model.from_pretrained(model_ckpt)
+        self.drop = get_dropouts(num = CFG.num_drop, start_prob = CFG.hidden_dropout_prob, increment= CFG.increment_dropout_prob)
+        self.classifier = nn.Linear(4 * self.bert.config.hidden_size, CFG.num_labels)
+
+    def forward(self, input_ids, attention_mask):
+        outputs = self.model(input_ids = input_ids, attention_mask = attention_mask, output_hidden_states = True)
+        cat_output = torch.cat((outputs[2][-1][:,0, ...], outputs[2][-2][:,0, ...], outputs[2][-3][:,0, ...], outputs[2][-4][:,0, ...]),-1)
+
+        num_dps = float(len(self.drop))
+        for ii, drop in enumerate(self.drop):
+            if ii == 0:
+                outputs = (self.classifier(drop(cat_output)) / num_dps)
+            else :
+                outputs += (self.classifier(drop(cat_output)) / num_dps)
+        return outputs
+
 def create_model(model_name:str, model_type:str) -> nn.Module:
     """Create model
 
@@ -179,6 +187,8 @@ def create_model(model_name:str, model_type:str) -> nn.Module:
         return ElectraClassification(model, model_ckpt)
     elif model_type == "multi_drop":
         return MultiDropModel(model, model_ckpt)
+    elif model_type == "4_hidden_drop":
+        return DropCatModel(model, model_ckpt)
     return CustomModel(model, model_ckpt)
 
 
