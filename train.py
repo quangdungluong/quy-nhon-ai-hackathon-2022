@@ -49,8 +49,8 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Argument Parser for Training model")
-    parser.add_argument('--model_name', type=str, default='xlm-roberta-base', help="select model name")
-    parser.add_argument('--model_type', type=str, default="naive", help="select model type")
+    parser.add_argument('--model_name', type=str, default='phobert-base', help="select model name")
+    parser.add_argument('--model_type', type=str, default="4_hidden", help="select model type")
     parser.add_argument('--train_path', type=str,
                         default='./train_final.csv', help='training df path')
     parser.add_argument('--test_path', type=str,
@@ -68,7 +68,7 @@ if __name__ == "__main__":
     parser.add_argument("--increment_dropout_prob", type=float, default=0.1, help="increment_dropout_prob")
     parser.add_argument("--train_folds", nargs='+', type=int, default=None, help="choose train folds")
     parser.add_argument("--scheduler_type", type=str, default="cosine", help="choose scheduler types")
-    parser.add_argument("--batch_size", type=int, default=16, help="choose batch size")
+    parser.add_argument("--batch_size", type=int, default=4, help="choose batch size")
     args = parser.parse_args()
 
     print(f'Seed {CFG.seed}')
