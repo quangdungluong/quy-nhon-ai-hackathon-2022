@@ -15,12 +15,12 @@ import transformers
 transformers.logging.set_verbosity_error()
 from vncorenlp import VnCoreNLP
 
+
 def main(args):
     train_df = pd.read_csv(args.train_path)
     is_segmented = False
     if args.rdrsegmenter_path is not None:
         is_segmented = True
-        # rdrsegmenter_path = "/kaggle/working/VnCoreNLP/VnCoreNLP-1.1.1.jar"
         rdrsegmenter = VnCoreNLP(args.rdrsegmenter_path, annotators="wseg", max_heap_size='-Xmx500m') 
         train_df["Review_segmented"] = train_df["Review"].apply(lambda x: ' '.join([' '.join(sent) for sent in rdrsegmenter.tokenize(x)]))
     # Split kfold
@@ -59,17 +59,16 @@ if __name__ == "__main__":
                         help="infer after trained model or not, default=True")
     parser.add_argument('--model_ckpt', type=str,
                         default="/kaggle/working/ckpt", help="path to model ckpt folder")
-    parser.add_argument("--submission", type=str,
-                        default="submission.csv", help="path to submission file")
     parser.add_argument("--output_path", type=str,
                         default="/kaggle/working/output", help="path to output folder")
-    parser.add_argument("--num_epochs", type=int, default=None, help="change number of epochs")
-    parser.add_argument("--lr", type=float, default=None, help="change learning rate")
-    parser.add_argument("--dropout", type=float, default=None, help="change hidden dropout probability")
+    parser.add_argument("--num_epochs", type=int, default=15, help="change number of epochs")
     parser.add_argument("--rdrsegmenter_path", type=str, default=None, help="rdrsegmenter path")
+    parser.add_argument("--lr", type=float, default=2e-5, help="change learning rate")
+    parser.add_argument("--dropout", type=float, default=0.1, help="change hidden dropout probability")
+    parser.add_argument("--increment_dropout_prob", type=float, default=0.1, help="increment_dropout_prob")
     parser.add_argument("--train_folds", nargs='+', type=int, default=None, help="choose train folds")
     parser.add_argument("--scheduler_type", type=str, default="cosine", help="choose scheduler types")
-    parser.add_argument("--increment_dropout_prob", type=float, default=0.1, help="increment_dropout_prob")
+    parser.add_argument("--batch_size", type=int, default=16, help="choose batch size")
     args = parser.parse_args()
 
     print(f'Seed {CFG.seed}')
@@ -77,19 +76,18 @@ if __name__ == "__main__":
     
     if "phobert" in args.model_name:
         CFG.max_len = 256
-    if args.num_epochs is not None:
-        CFG.num_epochs = args.num_epochs
-    if args.lr is not None:
-        CFG.lr = args.lr
-    if args.dropout is not None:
-        CFG.hidden_dropout_prob = args.dropout
     if args.train_folds is not None:
         train_folds = []
         for fold in args.train_folds:
             train_folds.append(fold)
         CFG.train_folds = train_folds
+        
+    CFG.lr = args.lr
+    CFG.hidden_dropout_prob = args.dropout
+    CFG.num_epochs = args.num_epochs
     CFG.scheduler_type = args.scheduler_type
     CFG.increment_dropout_prob = args.increment_dropout_prob
+    CFG.batch_size = args.batch_size
     
     if not os.path.exists(args.model_ckpt):
         os.makedirs(args.model_ckpt)
