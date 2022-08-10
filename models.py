@@ -152,7 +152,7 @@ class DropCatModel(nn.Module):
 
         self.model = model.from_pretrained(model_ckpt)
         self.drop = get_dropouts(num = CFG.num_drop, start_prob = CFG.hidden_dropout_prob, increment= CFG.increment_dropout_prob)
-        self.classifier = nn.Linear(4 * self.bert.config.hidden_size, CFG.num_labels)
+        self.classifier = nn.Linear(4 * self.model.config.hidden_size, CFG.num_labels)
 
     def forward(self, input_ids, attention_mask):
         outputs = self.model(input_ids = input_ids, attention_mask = attention_mask, output_hidden_states = True)
