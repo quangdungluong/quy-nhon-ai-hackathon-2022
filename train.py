@@ -4,6 +4,7 @@ import warnings
 
 import pandas as pd
 from sklearn.model_selection import KFold
+from iterstrat.ml_stratifiers import MultilabelStratifiedKFold
 
 from config import CFG
 from train_utils import train_fold
@@ -23,11 +24,14 @@ def main(args):
         is_segmented = True
         rdrsegmenter = VnCoreNLP(args.rdrsegmenter_path, annotators="wseg", max_heap_size='-Xmx500m') 
         train_df["Review_segmented"] = train_df["Review"].apply(lambda x: ' '.join([' '.join(sent) for sent in rdrsegmenter.tokenize(x)]))
-    # Split kfold
-    kfold = KFold(n_splits=CFG.num_folds,
+    
+    # Split MultilabelStratifiedKFold
+    aspects = ["giai_tri","luu_tru","nha_hang","an_uong","di_chuyen","mua_sam"]
+    kfold = MultilabelStratifiedKFold(n_splits=CFG.num_folds,
                             shuffle=True, random_state=CFG.seed)
     folds = train_df.copy()
-    for fold, (train_index, val_index) in enumerate(kfold.split(folds)):
+    targets = folds[aspects].values
+    for fold, (train_index, val_index) in enumerate(kfold.split(folds, targets)):
         folds.loc[val_index, 'fold'] = fold
     folds['fold'] = folds['fold'].astype(int)
 
