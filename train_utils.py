@@ -51,15 +51,15 @@ def train_epoch(model:nn.Module, dataloader:DataLoader, optimizer:Optimizer, sch
         loss = loss.mean()
         losses.append(loss.item())
 
-        targets = targets.squeeze().detach().cpu().numpy()
-        labels = np.atleast_2d(targets) if labels is None else np.concatenate([labels, np.atleast_2d(targets)])
-        outputs = outputs.squeeze().detach().cpu().numpy()
-        predictions = np.atleast_2d(outputs) if predictions is None else np.concatenate([predictions, np.atleast_2d(outputs)])
-        
         loss.backward() 
         nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
         optimizer.step()
         scheduler.step()
+        
+        targets = targets.squeeze().detach().cpu().numpy()
+        labels = np.atleast_2d(targets) if labels is None else np.concatenate([labels, np.atleast_2d(targets)])
+        outputs = outputs.squeeze().detach().cpu().numpy()
+        predictions = np.atleast_2d(outputs) if predictions is None else np.concatenate([predictions, np.atleast_2d(outputs)])
         
     loss = np.mean(losses)
     score_dict = get_score(labels, predictions)

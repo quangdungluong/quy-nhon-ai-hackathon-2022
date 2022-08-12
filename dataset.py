@@ -4,6 +4,7 @@ Dataset
 from array import array
 
 import numpy as np
+import pandas as pd
 import torch
 from pandas import DataFrame
 from tokenizers import Tokenizer
@@ -70,7 +71,23 @@ class HackathonDataset(Dataset):
         self.tokenizer = tokenizer
         self.is_label = is_label
         self.aspects = ["giai_tri","luu_tru","nha_hang","an_uong","di_chuyen","mua_sam"]
+        # multi_labels = [[self.df.loc[index, aspect] for aspect in self.aspects] for index in range(len(self.df))]
+        self.labels = self.get_target()
             
+    def get_target(self):
+
+        df_dum = pd.get_dummies(self.df, columns = self.aspects)
+
+        drop_col = []
+        for col in df_dum.columns:
+            if '0' in col or 'aspect' in col:
+                drop_col.append(col)
+
+        df_dum.drop(drop_col, axis = 1, inplace = True) 
+        target_col = [f"{aspect}_{rating}" for aspect in self.aspects for rating in range(1, 6)]
+        
+        return df_dum[target_col].values
+
     def __len__(self):
         return len(self.texts)
     
@@ -84,8 +101,8 @@ class HackathonDataset(Dataset):
         encoding['attention_mask'] = torch.tensor(encoding['attention_mask']).flatten()
         if self.is_label:
             # Get multi-labels of multi-aspects from the dataframe
-            multi_labels = [self.df.loc[index, aspect] for aspect in self.aspects]
-            labels = get_multi_label(multi_labels)
+            # multi_labels = [self.df.loc[index, aspect] for aspect in self.aspects]
+            labels = self.labels[index]
             return encoding, torch.tensor(labels, dtype=torch.float)
         return encoding
     
