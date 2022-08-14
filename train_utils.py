@@ -12,13 +12,12 @@ import torch.optim as optim
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from transformers.optimization import get_linear_schedule_with_warmup, get_cosine_schedule_with_warmup
 
 from config import CFG
 from dataset import create_dataloader
 from metrics import get_score
 from models import create_model, create_tokenizer
-from utils import get_final_prediction
+from utils import get_final_prediction, get_optimizer, get_scheduler, get_layerwise_lr_decay
 
 
 def train_epoch(model:nn.Module, dataloader:DataLoader, optimizer:Optimizer, scheduler):
@@ -137,20 +136,14 @@ def train_fold(model_name:str, model_type:str, scheduler_type:str, fold:int, tra
     train_dataloader = create_dataloader(train_fold_df, tokenizer, CFG.batch_size, is_train=True, is_segmented=is_segmented)
     val_dataloader = create_dataloader(val_fold_df, tokenizer, CFG.batch_size, is_train=False, is_segmented=is_segmented)
     
-    param_optimizer = list(model.named_parameters())
-    no_decay = ['bias', 'LayerNorm.bias', 'LayerNorm.weight']
-    optimizer_grouped_parameters = [
-        {'params': [p for n, p in param_optimizer if not any(nd in n for nd in no_decay)], 'weight_decay': 0.01},
-        {'params': [p for n, p in param_optimizer if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
-    ]
     # Create optimizer, scheduler, loss function
-    # optimizer = optim.AdamW(model.parameters(), lr=CFG.lr)
-    optimizer = optim.AdamW(optimizer_grouped_parameters, lr=CFG.lr)
-    if scheduler_type == "linear":
-        scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=CFG.num_warmup_steps, num_training_steps=len(train_dataloader)*CFG.num_epochs)
-    else:
-        scheduler = get_cosine_schedule_with_warmup(optimizer, num_warmup_steps=CFG.num_warmup_steps, num_training_steps=len(train_dataloader)*CFG.num_epochs, num_cycles=CFG.num_cycles)
-    
+    if CFG.is_llrd : 
+        grouped_optimizer_params  = get_layerwise_lr_decay(model)
+        optimizer = optim.AdamW(grouped_optimizer_params, lr = CFG.lr, correct_bias = True)
+    else :
+        optimizer = get_optimizer(model)
+
+    scheduler = get_scheduler(optimizer, scheduler_type, len(train_dataloader)*CFG.num_epochs)
     # Init to save best model
     best_score = -999
     best_epoch = 0

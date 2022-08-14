@@ -6,7 +6,16 @@ import random
 
 import numpy as np
 import torch
+<<<<<<< HEAD
 from tqdm import tqdm
+=======
+import torch.nn as nn
+import torch.optim as optim
+from transformers.optimization import get_linear_schedule_with_warmup, get_cosine_schedule_with_warmup
+
+from config import CFG
+
+>>>>>>> 21eaf1eb5f4c39bf15715f9d51263674060c290e
 
 def sigmoid(x:np.array) -> np.array:
     """sigmoid function
@@ -99,3 +108,79 @@ def get_final_prediction(logits:list, threshold=0.5):
             prob = [logit[i*5+j] for j in range(5)]
             probs[names[i]].append(prob)
     return predictions, probs
+
+
+def get_optimizer(model:nn.Module):
+    """get optimizer
+
+    Args:
+        model (nn.Module): model
+
+    Returns:
+        optimizer
+    """
+    param_optimizer = list(model.named_parameters())
+    no_decay = ['bias', 'LayerNorm.bias', 'LayerNorm.weight']
+    optimizer_grouped_parameters = [
+        {'params': [p for n, p in param_optimizer if not any(nd in n for nd in no_decay)], 'weight_decay': 0.01},
+        {'params': [p for n, p in param_optimizer if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
+    ]
+    optimizer = optim.AdamW(optimizer_grouped_parameters, lr=CFG.lr)
+
+    return optimizer
+    
+def get_scheduler(optimizer, scheduler_type:str, num_training_steps:int):
+    """get scheduler
+
+    Args:
+        optimizer (_type_): optimizer
+        scheduler_type (str): type of  scheduler
+        num_training_steps (int): total training steps
+
+    Returns:
+        scheduler 
+    """
+    if scheduler_type == "linear":
+        scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=CFG.num_warmup_steps, num_training_steps=num_training_steps)
+    else:
+        scheduler = get_cosine_schedule_with_warmup(optimizer, num_warmup_steps=CFG.num_warmup_steps, num_training_steps=num_training_steps, num_cycles=CFG.num_cycles)
+    
+    return scheduler    
+
+def get_layerwise_lr_decay(model:nn.Module):
+    """get layerwise learning rate decay
+
+    Args:
+        model (nn.Module): model
+
+    Returns:
+        optimizer_grouped_parameters : group optimizer parameters
+    """
+    no_decay = ['bias', 'LayerNorm.bias', 'LayerNorm.weight']
+    # initialize lr for task specific layer
+    optimizer_grouped_parameters = [
+        {
+            "params": [p for n, p in model.named_parameters() if "classifier" in n or "pooler" in n],
+            "weight_decay": CFG.weight_decay,
+            "lr": CFG.lr,
+        },
+    ]
+    # initialize lrs for every layer
+    layers = [getattr(model, 'bert').embeddings] + list(getattr(model, 'bert').encoder.layer)
+    layers.reverse()
+    lr = CFG.lr
+    for layer in layers:
+        lr *= CFG.llrd_ratio
+        optimizer_grouped_parameters += [
+            {
+                "params": [p for n, p in layer.named_parameters() if not any(nd in n for nd in no_decay)],
+                "weight_decay": CFG.weight_decay,
+                "lr": lr,
+            },
+            {
+                "params": [p for n, p in layer.named_parameters() if any(nd in n for nd in no_decay)],
+                "weight_decay": 0.0,
+                "lr": lr,
+            },
+        ]
+    return optimizer_grouped_parameters

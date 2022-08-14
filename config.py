@@ -17,6 +17,8 @@ class CFG:
     num_warmup_steps = 100
     lr = 1e-5
     weight_decay = 0.01
+    is_llrd = False
+    llrd_ratio =0.9
     num_epochs = 15
     max_len = 512
     hidden_dropout_prob = 0.1

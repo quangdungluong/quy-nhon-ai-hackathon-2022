@@ -1,5 +1,7 @@
 import torch
+import numpy as np
 import torch.nn as nn
+import torch.nn.functional as F
 from tokenizers import Tokenizer
 from transformers.models.deberta_v2.modeling_deberta_v2 import StableDropout
 
@@ -31,6 +33,99 @@ class MeanPooling(nn.Module):
         sum_mask = torch.clamp(sum_mask, min=1e-9)
         mean_embeddings = sum_embeddings / sum_mask
         return mean_embeddings
+
+class WeightedLayerPooling(nn.Module):
+    def __init__(self, num_hidden_layers = 12, layer_start = 4, layer_weights = None):
+        super().__init__()
+        self.layer_start = layer_start
+        self.num_hidden_layers = num_hidden_layers
+        self.layer_weights = layer_weights if layer_weights is not None \
+            else nn.Parameter(
+                torch.tensor([1] * (num_hidden_layers + 1 - layer_start), dtype=torch.float)
+            )
+
+    def forward(self, all_hidden_states):
+        all_layer_embedding = all_hidden_states[self.layer_start:, :, :, :]
+        weight_factor = self.layer_weights.unsqueeze(-1).unsqueeze(-1).unsqueeze(-1).expand(all_layer_embedding.size())
+        weighted_average = (weight_factor * all_layer_embedding).sum(dim=0) / self.layer_weights.sum()
+        return weighted_average
+
+class AttentionPooling(nn.Module):
+    def __init__(self, num_layers, hidden_size, hiddendim_fc):
+        super().__init__()
+        self.num_hidden_layers = num_layers
+        self.hidden_size = hidden_size
+        self.hiddendim_fc = hiddendim_fc
+        self.dropout = nn.Dropout(CFG.hidden_dropout_prob)
+
+        q_t = np.random.normal(loc=0.0, scale=0.1, size=(1, self.hidden_size))
+        self.q = nn.Parameter(torch.from_numpy(q_t)).float().to(CFG.device)
+        w_ht = np.random.normal(loc=0.0, scale=0.1, size=(self.hidden_size, self.hiddendim_fc))
+        self.w_h = nn.Parameter(torch.from_numpy(w_ht)).float().to(CFG.device)
+
+    def forward(self, all_hidden_states):
+        hidden_states = torch.stack([all_hidden_states[layer_i][:, 0].squeeze()
+                                     for layer_i in range(1, self.num_hidden_layers+1)], dim=-1)
+        hidden_states = hidden_states.view(-1, self.num_hidden_layers, self.hidden_size)
+        out = self.attention(hidden_states)
+        out = self.dropout(out)
+        return out
+
+    def attention(self, h):
+        v = torch.matmul(self.q, h.transpose(-2, -1)).squeeze(1)
+        v = F.softmax(v, -1)
+        v_temp = torch.matmul(v.unsqueeze(1), h).transpose(-2, -1)
+        v = torch.matmul(self.w_h.transpose(1, 0), v_temp).squeeze(2)
+        return v
+
+class AttentionModel(nn.Module):
+    def __init__(self, model, model_ckpt, hiddendim_fc = 128):
+        super().__init__()
+
+        self.bert = model.from_pretrained(model_ckpt)
+        self.pooler = AttentionPooling(self.bert.config.num_hidden_layers, self.bert.config.hidden_size, hiddendim_fc)
+        self.drop = get_dropouts(num = CFG.num_drop, start_prob = CFG.hidden_dropout_prob, increment= CFG.increment_dropout_prob)
+        self.classifier = nn.Linear(hiddendim_fc, CFG.num_labels)
+
+    def forward(self, input_ids, attention_mask):
+        bert_output = self.bert(input_ids = input_ids, attention_mask = attention_mask, output_hidden_states = True)
+        all_hidden_states = torch.stack(bert_output[2])
+        attention_pooling_embeddings = self.pooler(all_hidden_states)
+
+        num_dps = float(len(self.drop))
+
+        for ii, drop in enumerate(self.drop):
+            if ii == 0:
+                logits = (self.classifier(drop(attention_pooling_embeddings)) / num_dps)
+            else :
+                logits += (self.classifier(drop(attention_pooling_embeddings)) / num_dps)
+        
+        return logits
+
+class WLPDropModel(nn.Module):
+    def __init__(self, model, model_ckpt, layer_start = 9):
+        super().__init__()
+
+        self.bert = model.from_pretrained(model_ckpt)
+        self.pooler = WeightedLayerPooling(num_hidden_layers = self.bert.config.num_hidden_layers, layer_start = layer_start, layer_weights=None)
+        self.drop = get_dropouts(num = CFG.num_drop, start_prob = CFG.hidden_dropout_prob, increment= CFG.increment_dropout_prob)
+        self.classifier = nn.Linear(self.bert.config.hidden_size, CFG.num_labels)
+
+    def forward(self, input_ids, attention_mask):
+        bert_output = self.bert(input_ids = input_ids, attention_mask = attention_mask, output_hidden_states = True)
+        all_hidden_states = torch.stack(bert_output[2])
+        weighted_pooling_embeddings = self.pooler(all_hidden_states)[:, 0]
+
+        num_dps = float(len(self.drop))
+
+        for ii, drop in enumerate(self.drop):
+            if ii == 0:
+                logits = (self.classifier(drop(weighted_pooling_embeddings)) / num_dps)
+            else :
+                logits += (self.classifier(drop(weighted_pooling_embeddings)) / num_dps)
+        
+        return logits
+
     
 class CustomModel(nn.Module):
     """Custom model
@@ -189,6 +284,10 @@ def create_model(model_name:str, model_type:str) -> nn.Module:
         return MultiDropModel(model, model_ckpt)
     elif model_type == "4_hidden_drop":
         return DropCatModel(model, model_ckpt)
+    elif model_type == "attention":
+        return AttentionModel(model, model_ckpt)
+    elif model_type == "weight_pool":
+        return WLPDropModel(model, model_ckpt)
     return CustomModel(model, model_ckpt)
 
 
