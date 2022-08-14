@@ -6,7 +6,7 @@ import random
 
 import numpy as np
 import torch
-
+from tqdm import tqdm
 
 def sigmoid(x:np.array) -> np.array:
     """sigmoid function

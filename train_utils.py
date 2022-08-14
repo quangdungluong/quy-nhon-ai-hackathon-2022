@@ -107,7 +107,7 @@ def eval_model(model:nn.Module, dataloader:DataLoader):
         final_score += score["competition_score"] / len(score_dict)
     return loss, score_dict, final_score
 
-def train_fold(model_name:str, model_type:str, scheduler_type:str, fold:int, train_fold_df:pd.DataFrame, val_fold_df:pd.DataFrame, oof_file:pd.DataFrame, model_ckpt:str, is_segmented=False, save_last=False) -> pd.DataFrame:
+def train_fold(model_name:str, model_type:str, bpe, vocab, scheduler_type:str, fold:int, train_fold_df:pd.DataFrame, val_fold_df:pd.DataFrame, oof_file:pd.DataFrame, model_ckpt:str, is_segmented=False, save_last=False) -> pd.DataFrame:
     """Training 1 fold
 
     Args:
@@ -134,8 +134,8 @@ def train_fold(model_name:str, model_type:str, scheduler_type:str, fold:int, tra
     tokenizer = create_tokenizer(model_name)
     
     # Create dataloader
-    train_dataloader = create_dataloader(train_fold_df, tokenizer, CFG.batch_size, is_train=True, is_segmented=is_segmented)
-    val_dataloader = create_dataloader(val_fold_df, tokenizer, CFG.batch_size, is_train=False, is_segmented=is_segmented)
+    train_dataloader = create_dataloader(train_fold_df, tokenizer, bpe, vocab, CFG.batch_size, is_train=True, is_segmented=is_segmented)
+    val_dataloader = create_dataloader(val_fold_df, tokenizer, bpe, vocab, CFG.batch_size, is_train=False, is_segmented=is_segmented)
     
     param_optimizer = list(model.named_parameters())
     no_decay = ['bias', 'LayerNorm.bias', 'LayerNorm.weight']

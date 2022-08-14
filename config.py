@@ -7,7 +7,7 @@ from transformers import (PhobertTokenizer, RobertaModel, RobertaTokenizer,
 
 
 class CFG:
-    seed = 42
+    seed = 2022
     num_labels = 6*5 # 6 aspects and 5 ratings for each
     num_folds = 5
     train_folds = [0, 1, 2, 3, 4]
