@@ -15,13 +15,17 @@ import transformers
 
 transformers.logging.set_verbosity_error()
 from vncorenlp import VnCoreNLP
-
+# from fairseq.data.encoders.fastbpe import fastBPE
+# from fairseq.data import Dictionary
 
 def main(args):
     train_df = pd.read_csv(args.train_path)
     is_segmented = False
     if args.rdrsegmenter_path is not None:
         is_segmented = True
+        # bpe = fastBPE(args)
+        # vocab = Dictionary()
+        # vocab.add_from_file(args.dict_path)
         rdrsegmenter = VnCoreNLP(args.rdrsegmenter_path, annotators="wseg", max_heap_size='-Xmx500m') 
         train_df["Review_segmented"] = train_df["Review"].apply(lambda x: ' '.join([' '.join(sent) for sent in rdrsegmenter.tokenize(x)]))
     
@@ -73,6 +77,8 @@ if __name__ == "__main__":
     parser.add_argument("--train_folds", nargs='+', type=int, default=None, help="choose train folds")
     parser.add_argument("--scheduler_type", type=str, default="cosine", help="choose scheduler types")
     parser.add_argument("--batch_size", type=int, default=4, help="choose batch size")
+    # parser.add_argument('--bpe-codes', default="./bpe.codes",type=str, help='path to fastBPE BPE')
+    # parser.add_argument('--dict_path', type=str, default="./dict.txt")
     args = parser.parse_args()
 
     print(f'Seed {CFG.seed}')
