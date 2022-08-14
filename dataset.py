@@ -142,5 +142,5 @@ def create_dataloader(df: DataFrame, tokenizer: Tokenizer, bpe, vocab, batch_siz
     Returns:
         DataLoader: return dataloader
     """
-    dataset = HackathonDataset(df, tokenizer, bpe, vocab is_label, is_segmented)
+    dataset = HackathonDataset(df, tokenizer, bpe, vocab, is_label, is_segmented)
     return DataLoader(dataset, batch_size=batch_size, shuffle=True if is_train else False, num_workers=2)
