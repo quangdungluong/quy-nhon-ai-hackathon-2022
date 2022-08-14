@@ -6,16 +6,13 @@ import random
 
 import numpy as np
 import torch
-<<<<<<< HEAD
 from tqdm import tqdm
-=======
 import torch.nn as nn
 import torch.optim as optim
 from transformers.optimization import get_linear_schedule_with_warmup, get_cosine_schedule_with_warmup
 
 from config import CFG
 
->>>>>>> 21eaf1eb5f4c39bf15715f9d51263674060c290e
 
 def sigmoid(x:np.array) -> np.array:
     """sigmoid function
