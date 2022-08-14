@@ -70,7 +70,7 @@ class HackathonDataset(Dataset):
         data['attention_mask']: torch.Size([batch_size, max_len])
         targets: torch.Size([batch_size, num_labels])
     '''
-    def __init__(self, df: DataFrame, tokenizer: Tokenizer, bpe, vocab, is_label=True, is_segmented=False) -> None:
+    def __init__(self, df: DataFrame, tokenizer: Tokenizer, is_label=True, is_segmented=False) -> None:
         """init
 
         Args:
@@ -91,8 +91,8 @@ class HackathonDataset(Dataset):
         self.aspects = ["giai_tri","luu_tru","nha_hang","an_uong","di_chuyen","mua_sam"]
         # multi_labels = [[self.df.loc[index, aspect] for aspect in self.aspects] for index in range(len(self.df))]
         self.labels = self.get_target()
-        self.vocab = vocab
-        self.bpe = bpe
+        # self.vocab = vocab
+        # self.bpe = bpe
             
     def get_target(self):
 
@@ -113,13 +113,13 @@ class HackathonDataset(Dataset):
     
     def __getitem__(self, index):
         text = self.texts[index]
-        encoding = {}
-        encoding['input_ids'] = convert_line(text, self.vocab, self.bpe, CFG.max_len)
-        encoding['attention_mask'] = encoding['input_ids'] > 0
-        # encoding = self.tokenizer(text, max_length=CFG.max_len,
-        #                           padding='max_length',
-        #                           add_special_tokens=True,
-        #                           truncation=True)
+        # encoding = {}
+        # encoding['input_ids'] = convert_line(text, self.vocab, self.bpe, CFG.max_len)
+        # encoding['attention_mask'] = encoding['input_ids'] > 0
+        encoding = self.tokenizer(text, max_length=CFG.max_len,
+                                  padding='max_length',
+                                  add_special_tokens=True,
+                                  truncation=True)
         encoding['input_ids'] = torch.tensor(encoding['input_ids']).flatten()
         encoding['attention_mask'] = torch.tensor(encoding['attention_mask']).flatten()
         if self.is_label:
@@ -129,7 +129,7 @@ class HackathonDataset(Dataset):
             return encoding, torch.tensor(labels, dtype=torch.float)
         return encoding
     
-def create_dataloader(df: DataFrame, tokenizer: Tokenizer, bpe, vocab, batch_size: int, is_label=True, is_train=True, is_segmented=False) -> DataLoader:
+def create_dataloader(df: DataFrame, tokenizer: Tokenizer, batch_size: int, is_label=True, is_train=True, is_segmented=False) -> DataLoader:
     """create dataloader
 
     Args:
@@ -142,5 +142,5 @@ def create_dataloader(df: DataFrame, tokenizer: Tokenizer, bpe, vocab, batch_siz
     Returns:
         DataLoader: return dataloader
     """
-    dataset = HackathonDataset(df, tokenizer, bpe, vocab, is_label, is_segmented)
+    dataset = HackathonDataset(df, tokenizer, is_label, is_segmented)
     return DataLoader(dataset, batch_size=batch_size, shuffle=True if is_train else False, num_workers=2)
