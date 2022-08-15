@@ -46,7 +46,7 @@ def train_epoch(model:nn.Module, dataloader:DataLoader, optimizer:Optimizer, sch
         optimizer.zero_grad()
         outputs = model(input_ids=input_ids, attention_mask=attention_mask)
 
-        loss = F.binary_cross_entropy_with_logits(outputs, targets.float(), reduction='sum')
+        loss = F.binary_cross_entropy_with_logits(outputs, targets.float())
 
         loss = loss.mean()
         losses.append(loss.item())
@@ -91,7 +91,7 @@ def eval_model(model:nn.Module, dataloader:DataLoader):
         
         outputs = model(input_ids=input_ids, attention_mask=attention_mask)
 
-        loss = F.binary_cross_entropy_with_logits(outputs, targets.float(), reduction='sum')
+        loss = F.binary_cross_entropy_with_logits(outputs, targets.float())
         loss = loss.mean()
         losses.append(loss.item())
         
