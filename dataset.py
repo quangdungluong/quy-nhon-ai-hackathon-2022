@@ -93,6 +93,15 @@ class HackathonDataset(Dataset):
         self.labels = self.get_target()
         # self.vocab = vocab
         # self.bpe = bpe
+        self.vocab = self.tokenizer.get_vocab()
+
+        words_out = pd.read_csv('/kaggle/input/outofvocab/out_word.csv')
+        origin_words = words_out['out_word'].values
+        replace_words = words_out['replace'].values
+        check_list = {}
+        for i in range(len(origin_words)):
+            check_list[origin_words[i]] = replace_words[i]
+        self.check_list = check_list
             
     def get_target(self):
 
@@ -116,6 +125,17 @@ class HackathonDataset(Dataset):
         # encoding = {}
         # encoding['input_ids'] = convert_line(text, self.vocab, self.bpe, CFG.max_len)
         # encoding['attention_mask'] = encoding['input_ids'] > 0
+        lower_text = text.lower()
+        list_preprocessed_words = []
+        list_word = lower_text.split()
+        for word in list_word:
+            if word in self.vocab:
+                list_preprocessed_words.append(str(word))
+            else:
+                if word in self.check_list:
+                    list_preprocessed_words.append(str(self.check_list[word]))
+        text = ' '.join(list_preprocessed_words)
+        
         encoding = self.tokenizer(text, max_length=CFG.max_len,
                                   padding='max_length',
                                   add_special_tokens=True,
