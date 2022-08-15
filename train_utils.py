@@ -45,25 +45,11 @@ def train_epoch(model:nn.Module, dataloader:DataLoader, optimizer:Optimizer, sch
         
         optimizer.zero_grad()
         outputs = model(input_ids=input_ids, attention_mask=attention_mask)
-        outputs_ = torch.clone(outputs)
-        targets_ = torch.clone(targets)
-        loss = 0
-        for i in range(4):    # 4 is batch size
-            target = targets_[i]
-            output = outputs_[i]
-            target = get_label_torch(target)
-            output = get_prediction_torch(output)
-            for j in range(6):
-                if (target[j] == 0 and output[j] != 0) or (target[j] != 0 and output[j] == 0):
-                    loss += 5/6
-                else:
-                    loss += abs(target[j] - output[j])
 
-        # loss = F.binary_cross_entropy_with_logits(outputs, targets.float())
+        loss = F.binary_cross_entropy_with_logits(outputs, targets.float())
 
-        # loss = loss.mean()
-        # losses.append(loss.item())
-        losses.append(loss)
+        loss = loss.mean()
+        losses.append(loss.item())
 
         loss.backward() 
         nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
@@ -104,24 +90,10 @@ def eval_model(model:nn.Module, dataloader:DataLoader):
         targets = targets.to(CFG.device)
         
         outputs = model(input_ids=input_ids, attention_mask=attention_mask)
-        outputs_ = torch.clone(outputs)
-        targets_ = torch.clone(targets)
-        outputs_ = get_prediction_torch(outputs_)
-        targets_ = get_label_torch(targets_)
-        loss = 0
-        for i in range(4):    # 4 is batch size
-            target = targets_[i]
-            output = outputs_[i]
-            for j in range(6):
-                if (target[j] == 0 and output[j] != 0) or (target[j] != 0 and output[j] == 0):
-                    loss += 5/6
-                else:
-                    loss += abs(target[j] - output[j])
 
-        # loss = F.binary_cross_entropy_with_logits(outputs, targets.float())
-        # loss = loss.mean()
-        # losses.append(loss.item())
-        losses.append(loss)
+        loss = F.binary_cross_entropy_with_logits(outputs, targets.float())
+        loss = loss.mean()
+        losses.append(loss.item())
         
         targets = targets.squeeze().detach().cpu().numpy()
         labels = np.atleast_2d(targets) if labels is None else np.concatenate([labels, np.atleast_2d(targets)])
