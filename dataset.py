@@ -101,11 +101,10 @@ class HackathonDataset(Dataset):
         list_preprocessed_words = []
         list_word = lower_text.split()
         for word in list_word:
-            if word in self.vocab:
+            if word in self.vocab or word not in self.check_list:
                 list_preprocessed_words.append(str(word))
             else:
-                if word in self.check_list:
-                    list_preprocessed_words.append(str(self.check_list[word]))
+                list_preprocessed_words.append(str(self.check_list[word]))
         text = ' '.join(list_preprocessed_words)
         
         encoding = self.tokenizer(text, max_length=CFG.max_len,
