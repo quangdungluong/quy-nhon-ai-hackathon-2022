@@ -47,12 +47,12 @@ def train_epoch(model:nn.Module, dataloader:DataLoader, optimizer:Optimizer, sch
         outputs = model(input_ids=input_ids, attention_mask=attention_mask)
         outputs_ = torch.clone(outputs)
         targets_ = torch.clone(targets)
-        outputs_ = get_prediction_torch(outputs_)
-        targets_ = get_label_torch(targets_)
         loss = 0
         for i in range(4):    # 4 is batch size
             target = targets_[i]
             output = outputs_[i]
+            target = get_label_torch(target)
+            output = get_prediction_torch(output)
             for j in range(6):
                 if (target[j] == 0 and output[j] != 0) or (target[j] != 0 and output[j] == 0):
                     loss += 5/6
