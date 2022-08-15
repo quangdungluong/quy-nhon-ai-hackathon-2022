@@ -117,7 +117,7 @@ def get_prediction_torch(outputs:torch.tensor, threshold=0.5)->torch.tensor:
     Returns:
         np.array: predictions, multi-labels vector, shape: [1,6]
     """
-    outputs = sigmoid(outputs)
+    outputs = sigmoid_torch()(outputs)
     result = np.array([0, 0, 0, 0, 0, 0])
     for i in range(6):
         best_score = -999
