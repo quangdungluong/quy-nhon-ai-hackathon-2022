@@ -11,29 +11,11 @@ from tokenizers import Tokenizer
 from torch.utils.data import DataLoader, Dataset
 
 from config import CFG
-from tqdm import tqdm
 
 # Sorry for this very very silly code, to much magic number, dummy
 # maybe clean after...
 # convert multi-label to one-hot
 # Ex: [2,3,1,0] -> [0,1,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0]
-
-def convert_line(text, vocab, bpe, max_sequence_length):
-    outputs = np.zeros((1, max_sequence_length))
-    
-    cls_id = 0
-    eos_id = 2
-    pad_id = 1
-
-    subword = bpe.encode('<s> ' + text + ' </s>')
-    input_ids = vocab.encode_line(subword, append_eos=False, add_if_not_exist=False).long().tolist()
-    if len(input_ids) > max_sequence_length:
-        input_ids = input_ids[:max_sequence_length] 
-        input_ids[-1] = eos_id
-    else:
-        input_ids = input_ids + [pad_id, ]*(max_sequence_length - len(input_ids))
-    outputs = np.array(input_ids)
-    return outputs
 
 def convert_label(rating:int) -> np.array:
     """convert label of 1 aspect into one-hot vector
@@ -89,13 +71,10 @@ class HackathonDataset(Dataset):
         self.tokenizer = tokenizer
         self.is_label = is_label
         self.aspects = ["giai_tri","luu_tru","nha_hang","an_uong","di_chuyen","mua_sam"]
-        # multi_labels = [[self.df.loc[index, aspect] for aspect in self.aspects] for index in range(len(self.df))]
         self.labels = self.get_target()
-        # self.vocab = vocab
-        # self.bpe = bpe
         self.vocab = self.tokenizer.get_vocab()
 
-        words_out = pd.read_csv('/kaggle/input/outofvocab/out_word.csv')
+        words_out = pd.read_csv('./out_word.csv')
         origin_words = words_out['out_word'].values
         replace_words = words_out['replace'].values
         check_list = {}
@@ -104,17 +83,13 @@ class HackathonDataset(Dataset):
         self.check_list = check_list
             
     def get_target(self):
-
         df_dum = pd.get_dummies(self.df, columns = self.aspects)
-
         drop_col = []
         for col in df_dum.columns:
             if '0' in col or 'aspect' in col:
                 drop_col.append(col)
-
         df_dum.drop(drop_col, axis = 1, inplace = True) 
         target_col = [f"{aspect}_{rating}" for aspect in self.aspects for rating in range(1, 6)]
-        
         return df_dum[target_col].values
 
     def __len__(self):
@@ -122,9 +97,6 @@ class HackathonDataset(Dataset):
     
     def __getitem__(self, index):
         text = self.texts[index]
-        # encoding = {}
-        # encoding['input_ids'] = convert_line(text, self.vocab, self.bpe, CFG.max_len)
-        # encoding['attention_mask'] = encoding['input_ids'] > 0
         lower_text = text.lower()
         list_preprocessed_words = []
         list_word = lower_text.split()
@@ -144,7 +116,6 @@ class HackathonDataset(Dataset):
         encoding['attention_mask'] = torch.tensor(encoding['attention_mask']).flatten()
         if self.is_label:
             # Get multi-labels of multi-aspects from the dataframe
-            # multi_labels = [self.df.loc[index, aspect] for aspect in self.aspects]
             labels = self.labels[index]
             return encoding, torch.tensor(labels, dtype=torch.float)
         return encoding
