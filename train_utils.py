@@ -17,7 +17,7 @@ from config import CFG
 from dataset import create_dataloader
 from metrics import get_score
 from models import create_model, create_tokenizer
-from utils import get_final_prediction, get_optimizer, get_scheduler, get_layerwise_lr_decay
+from utils import *
 
 
 def train_epoch(model:nn.Module, dataloader:DataLoader, optimizer:Optimizer, scheduler):
@@ -45,11 +45,25 @@ def train_epoch(model:nn.Module, dataloader:DataLoader, optimizer:Optimizer, sch
         
         optimizer.zero_grad()
         outputs = model(input_ids=input_ids, attention_mask=attention_mask)
+        outputs_ = outputs.copy()
+        targets_ = targets.copy()
+        outputs_ = get_prediction_torch(outputs_)
+        targets_ = get_label_torch(targets_)
+        loss = 0
+        for i in range(4):    # 4 is batch size
+            target = targets_[i]
+            output = outputs_[i]
+            for j in range(6):
+                if (target[j] == 0 and output[j] != 0) or (target[j] != 0 and output[j] == 0):
+                    loss += 5/6
+                else:
+                    loss += abs(target[j] - output[j])
 
-        loss = F.binary_cross_entropy_with_logits(outputs, targets.float())
+        # loss = F.binary_cross_entropy_with_logits(outputs, targets.float())
 
-        loss = loss.mean()
-        losses.append(loss.item())
+        # loss = loss.mean()
+        # losses.append(loss.item())
+        losses.append(loss)
 
         loss.backward() 
         nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
@@ -90,10 +104,24 @@ def eval_model(model:nn.Module, dataloader:DataLoader):
         targets = targets.to(CFG.device)
         
         outputs = model(input_ids=input_ids, attention_mask=attention_mask)
+        outputs_ = outputs.copy()
+        targets_ = targets.copy()
+        outputs_ = get_prediction_torch(outputs_)
+        targets_ = get_label_torch(targets_)
+        loss = 0
+        for i in range(4):    # 4 is batch size
+            target = targets_[i]
+            output = outputs_[i]
+            for j in range(6):
+                if (target[j] == 0 and output[j] != 0) or (target[j] != 0 and output[j] == 0):
+                    loss += 5/6
+                else:
+                    loss += abs(target[j] - output[j])
 
-        loss = F.binary_cross_entropy_with_logits(outputs, targets.float())
-        loss = loss.mean()
-        losses.append(loss.item())
+        # loss = F.binary_cross_entropy_with_logits(outputs, targets.float())
+        # loss = loss.mean()
+        # losses.append(loss.item())
+        losses.append(loss)
         
         targets = targets.squeeze().detach().cpu().numpy()
         labels = np.atleast_2d(targets) if labels is None else np.concatenate([labels, np.atleast_2d(targets)])
