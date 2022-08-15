@@ -47,6 +47,13 @@ def train_epoch(model:nn.Module, dataloader:DataLoader, optimizer:Optimizer, sch
         outputs = model(input_ids=input_ids, attention_mask=attention_mask)
 
         loss = F.binary_cross_entropy_with_logits(outputs, targets.float())
+        print('outputs: ', outputs)
+        print('type_outputs: ', type(outputs))
+        print('outputs_shape: ', outputs.shape)
+        print('targets: ', targets)
+        print('type_targets: ', type(targets))
+        print('targets_shape: ', targets.shape)
+
         loss = loss.mean()
         losses.append(loss.item())
 
