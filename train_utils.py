@@ -40,7 +40,7 @@ def train_epoch(model:nn.Module, dataloader:DataLoader, optimizer:Optimizer, sch
     for data, targets in tqdm(dataloader):
         input_ids = data["input_ids"].to(CFG.device)
         attention_mask = data["attention_mask"].to(CFG.device)
-        targets = targets.type(torch.LongTensor)
+        # targets = targets.type(torch.LongTensor)
         targets = targets.to(CFG.device)
         
         optimizer.zero_grad()
@@ -85,7 +85,7 @@ def eval_model(model:nn.Module, dataloader:DataLoader):
     for data, targets in tqdm(dataloader):
         input_ids = data["input_ids"].to(CFG.device)
         attention_mask = data["attention_mask"].to(CFG.device)
-        targets = targets.type(torch.LongTensor)
+        # targets = targets.type(torch.LongTensor)
         targets = targets.to(CFG.device)
         
         outputs = model(input_ids=input_ids, attention_mask=attention_mask)
