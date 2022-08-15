@@ -45,8 +45,8 @@ def train_epoch(model:nn.Module, dataloader:DataLoader, optimizer:Optimizer, sch
         
         optimizer.zero_grad()
         outputs = model(input_ids=input_ids, attention_mask=attention_mask)
-        outputs_ = outputs.copy()
-        targets_ = targets.copy()
+        outputs_ = torch.clone(outputs)
+        targets_ = torch.clone(targets)
         outputs_ = get_prediction_torch(outputs_)
         targets_ = get_label_torch(targets_)
         loss = 0
@@ -104,8 +104,8 @@ def eval_model(model:nn.Module, dataloader:DataLoader):
         targets = targets.to(CFG.device)
         
         outputs = model(input_ids=input_ids, attention_mask=attention_mask)
-        outputs_ = outputs.copy()
-        targets_ = targets.copy()
+        outputs_ = torch.clone(outputs)
+        targets_ = torch.clone(targets)
         outputs_ = get_prediction_torch(outputs_)
         targets_ = get_label_torch(targets_)
         loss = 0
