@@ -60,7 +60,28 @@ class HackathonDataset(Dataset):
                 drop_col.append(col)
         df_dum.drop(drop_col, axis = 1, inplace = True) 
         target_col = [f"{aspect}_{rating}" for aspect in self.aspects for rating in range(1, 6)]
-        return df_dum[target_col].values
+        
+        labels = df_dum[target_col].values
+        labels = self.label_smoothing(labels)
+        return labels
+
+    def label_smoothing(self, labels):
+        smoothing = [0.5, 0.1, 0.02, 0.01]
+        LS = []
+        for label in labels:
+            label_ = np.ones((30,))
+            for i in range(6): #loop aspect
+                index = -1
+                for j in range(5): #loop rating
+                    if (label[5*i+j] == 1):
+                        index = j
+                for j in range(1,5):
+                    if index - j >= 0:
+                        label_[5*i + index - j] = smoothing[j-1]
+                    if index + j < 5:
+                        label_[5*i + index + j] = smoothing[j-1]
+            LS.append(label_)
+        return LS
 
     def __len__(self):
         return len(self.texts)
