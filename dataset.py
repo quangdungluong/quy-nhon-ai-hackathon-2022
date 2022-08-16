@@ -60,7 +60,9 @@ class HackathonDataset(Dataset):
                 drop_col.append(col)
         df_dum.drop(drop_col, axis = 1, inplace = True) 
         target_col = [f"{aspect}_{rating}" for aspect in self.aspects for rating in range(1, 6)]
-        return df_dum[target_col].values
+        
+        labels = df_dum[target_col].values
+        return labels
 
     def __len__(self):
         return len(self.texts)
