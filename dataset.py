@@ -66,7 +66,6 @@ class HackathonDataset(Dataset):
         return labels, label_smoothing
 
     def label_smoothing(self, labels):
-        smoothing = [0.1, 0.01, 0.001, 0.0001]
         LS = []
         for label in labels:
             label_ = np.ones((30,))
@@ -75,11 +74,12 @@ class HackathonDataset(Dataset):
                 for j in range(5): #loop rating
                     if (label[5*i+j] == 1):
                         index = j
+                label_[5*i+index] = 0.9
                 for j in range(1,5):
                     if index - j >= 0:
-                        label_[5*i + index - j] = smoothing[j-1]
+                        label_[5*i + index - j] = 0.025
                     if index + j < 5:
-                        label_[5*i + index + j] = smoothing[j-1]
+                        label_[5*i + index + j] = 0.025
             LS.append(label_)
         return LS
 
