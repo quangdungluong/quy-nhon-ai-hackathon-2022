@@ -32,7 +32,7 @@ def train_epoch(model:nn.Module, dataloader:DataLoader, optimizer:Optimizer, sch
     Returns:
         _type_: loss, score dictionary, final competition score
     """
-    model = model.train()
+    model.train()
     losses = []
     labels = None
     predictions = None
@@ -40,7 +40,7 @@ def train_epoch(model:nn.Module, dataloader:DataLoader, optimizer:Optimizer, sch
     for data, targets in tqdm(dataloader):
         input_ids = data["input_ids"].to(CFG.device)
         attention_mask = data["attention_mask"].to(CFG.device)
-        targets = targets.type(torch.LongTensor)
+        # targets = targets.type(torch.LongTensor)
         targets = targets.to(CFG.device)
         
         optimizer.zero_grad()
@@ -48,9 +48,9 @@ def train_epoch(model:nn.Module, dataloader:DataLoader, optimizer:Optimizer, sch
 
         loss = F.binary_cross_entropy_with_logits(outputs, targets.float())
         loss = loss.mean()
+        loss.backward() 
         losses.append(loss.item())
 
-        loss.backward() 
         nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
         optimizer.step()
         scheduler.step()
@@ -77,7 +77,7 @@ def eval_model(model:nn.Module, dataloader:DataLoader):
     Returns:
         _type_: loss, score dictionary, final competition score
     """
-    model = model.eval()
+    model.eval()
     losses = []
     labels = None
     predictions = None
@@ -85,7 +85,7 @@ def eval_model(model:nn.Module, dataloader:DataLoader):
     for data, targets in tqdm(dataloader):
         input_ids = data["input_ids"].to(CFG.device)
         attention_mask = data["attention_mask"].to(CFG.device)
-        targets = targets.type(torch.LongTensor)
+        # targets = targets.type(torch.LongTensor)
         targets = targets.to(CFG.device)
         
         outputs = model(input_ids=input_ids, attention_mask=attention_mask)
@@ -119,6 +119,7 @@ def train_fold(model_name:str, model_type:str, scheduler_type:str, fold:int, tra
         val_fold_df (pd.DataFrame): val fold dataframe
         oof_file (pd.DataFrame): out of fold dataframe
         model_ckpt (str): path to model-checkpoint directory
+        is_segmented (bool, optional): is using word segmented or not. Defaults to False.
         save_last (bool, optional): save last epoch or not. Defaults to False.
 
     Returns:
