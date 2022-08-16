@@ -39,7 +39,7 @@ class HackathonDataset(Dataset):
         self.tokenizer = tokenizer
         self.is_label = is_label
         self.aspects = ["giai_tri","luu_tru","nha_hang","an_uong","di_chuyen","mua_sam"]
-        self.labels, self.LS = self.get_target()
+        self.labels = self.get_target()
 
         # preprocessing
         self.vocab = self.tokenizer.get_vocab()
@@ -62,26 +62,7 @@ class HackathonDataset(Dataset):
         target_col = [f"{aspect}_{rating}" for aspect in self.aspects for rating in range(1, 6)]
         
         labels = df_dum[target_col].values
-        label_smoothing = self.label_smoothing(labels)
-        return labels, label_smoothing
-
-    def label_smoothing(self, labels):
-        LS = []
-        for label in labels:
-            label_ = np.ones((30,))
-            for i in range(6): #loop aspect
-                index = -1
-                for j in range(5): #loop rating
-                    if (label[5*i+j] == 1):
-                        index = j
-                label_[5*i+index] = 0.9
-                for j in range(1,5):
-                    if index - j >= 0:
-                        label_[5*i + index - j] = 0.025
-                    if index + j < 5:
-                        label_[5*i + index + j] = 0.025
-            LS.append(label_)
-        return LS
+        return labels
 
     def __len__(self):
         return len(self.texts)
@@ -107,8 +88,7 @@ class HackathonDataset(Dataset):
         if self.is_label:
             # Get multi-labels of multi-aspects from the dataframe
             labels = self.labels[index]
-            label_smoothing = self.LS[index]
-            return encoding, torch.tensor(labels, dtype=torch.float), torch.tensor(label_smoothing, dtype=torch.float)
+            return encoding, torch.tensor(labels, dtype=torch.float)
         return encoding
     
 def create_dataloader(df: DataFrame, tokenizer: Tokenizer, batch_size: int, is_label=True, is_train=True, is_segmented=False) -> DataLoader:
