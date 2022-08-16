@@ -83,13 +83,20 @@ class HackathonDataset(Dataset):
                                   padding='max_length',
                                   add_special_tokens=True,
                                   truncation=True)
-        encoding['input_ids'] = torch.tensor(encoding['input_ids']).flatten()
-        encoding['attention_mask'] = torch.tensor(encoding['attention_mask']).flatten()
+        # encoding['input_ids'] = torch.tensor(encoding['input_ids']).flatten()
+        # encoding['attention_mask'] = torch.tensor(encoding['attention_mask']).flatten()
         if self.is_label:
             # Get multi-labels of multi-aspects from the dataframe
             labels = self.labels[index]
-            return encoding, torch.tensor(labels, dtype=torch.float)
-        return encoding
+            return {
+                'input_ids': torch.tensor(encoding['input_ids']).flatten(),
+                'attention_mask': torch.tensor(encoding['attention_mask']).flatten(),
+                'target': torch.tensor(labels, dtype=torch.float)
+            }
+        return {
+            'input_ids': torch.tensor(encoding['input_ids']).flatten(),
+            'attention_mask': torch.tensor(encoding['attention_mask']).flatten()
+        }
     
 def create_dataloader(df: DataFrame, tokenizer: Tokenizer, batch_size: int, is_label=True, is_train=True, is_segmented=False) -> DataLoader:
     """create dataloader
