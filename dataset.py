@@ -66,7 +66,7 @@ class HackathonDataset(Dataset):
         return labels, label_smoothing
 
     def label_smoothing(self, labels):
-        smoothing = [0.5, 0.1, 0.02, 0.01]
+        smoothing = [0.1, 0.01, 0.001, 0.0001]
         LS = []
         for label in labels:
             label_ = np.ones((30,))
