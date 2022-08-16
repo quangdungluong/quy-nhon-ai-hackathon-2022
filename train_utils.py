@@ -37,11 +37,11 @@ def train_epoch(model:nn.Module, dataloader:DataLoader, optimizer:Optimizer, sch
     labels = None
     predictions = None
     
-    for data, targets in tqdm(dataloader):
+    for data in tqdm(dataloader):
         input_ids = data["input_ids"].to(CFG.device)
         attention_mask = data["attention_mask"].to(CFG.device)
         # targets = targets.type(torch.LongTensor)
-        targets = targets.to(CFG.device)
+        targets = data['target'].to(CFG.device)
         
         optimizer.zero_grad()
         outputs = model(input_ids=input_ids, attention_mask=attention_mask)
@@ -82,11 +82,11 @@ def eval_model(model:nn.Module, dataloader:DataLoader):
     labels = None
     predictions = None
     
-    for data, targets in tqdm(dataloader):
+    for data in tqdm(dataloader):
         input_ids = data["input_ids"].to(CFG.device)
         attention_mask = data["attention_mask"].to(CFG.device)
         # targets = targets.type(torch.LongTensor)
-        targets = targets.to(CFG.device)
+        targets = data['target'].to(CFG.device)
         
         outputs = model(input_ids=input_ids, attention_mask=attention_mask)
 
@@ -183,7 +183,7 @@ def train_fold(model_name:str, model_type:str, scheduler_type:str, fold:int, tra
     model = model.eval()
     logits = [] # a list has len equal num examples and logits[0] has shape (30,)
 
-    for data, targets in tqdm(val_dataloader):
+    for data in tqdm(val_dataloader):
         input_ids = data['input_ids'].to(CFG.device)
         attention_mask = data['attention_mask'].to(CFG.device)
         
