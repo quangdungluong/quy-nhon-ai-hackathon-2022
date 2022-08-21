@@ -2,7 +2,7 @@
 Config hyperparameters
 """
 import torch
-from transformers import (PhobertTokenizer, RobertaModel, RobertaTokenizer,
+from transformers import (PhobertTokenizer, RobertaModel,
                           XLMRobertaModel, XLMRobertaTokenizer)
 
 
@@ -18,9 +18,9 @@ class CFG:
     lr = 1e-5
     weight_decay = 0.01
     is_llrd = False
-    llrd_ratio =0.9
+    llrd_ratio = 0.9
     num_epochs = 15
-    max_len = 512
+    max_len = 256
     hidden_dropout_prob = 0.1
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

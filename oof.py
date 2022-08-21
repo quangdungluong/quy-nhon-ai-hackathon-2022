@@ -26,7 +26,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Argument Parser for Calculate CV score")
     parser.add_argument('--folder', type=str, default='06-08-2022', help="select subfolder of oof files")
-    parser.add_argument('--save', type=bool, default=True, help="save report score or not")
+    parser.add_argument('--save', type=bool, default=False, help="save report score or not")
     args = parser.parse_args()
 
     aspects = ["giai_tri", "luu_tru", "nha_hang", "an_uong", "di_chuyen", "mua_sam"]
@@ -41,9 +41,8 @@ if __name__ == "__main__":
     for threshold in thresholds:
         sub_score = {}
         predictions = convert_probs_to_label(prediction_probs, threshold)
-        # print(predictions.shape)
         for i in range(6):
-            sub_score[aspects[i]] = report_score(predictions[:,i], labels[:,i])
+            sub_score[aspects[i]] = report_score(labels[:,i], predictions[:,i])
         final_score = 0
         for score in sub_score.values():
             final_score += score["competition_score"] / len(sub_score)

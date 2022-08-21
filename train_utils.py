@@ -32,16 +32,15 @@ def train_epoch(model:nn.Module, dataloader:DataLoader, optimizer:Optimizer, sch
     Returns:
         _type_: loss, score dictionary, final competition score
     """
-    model = model.train()
+    model.train()
     losses = []
     labels = None
     predictions = None
     
-    for data, targets in tqdm(dataloader):
+    for data in tqdm(dataloader):
         input_ids = data["input_ids"].to(CFG.device)
         attention_mask = data["attention_mask"].to(CFG.device)
-        targets = targets.type(torch.LongTensor)
-        targets = targets.to(CFG.device)
+        targets = data['target'].to(CFG.device)
         
         optimizer.zero_grad()
         outputs = model(input_ids=input_ids, attention_mask=attention_mask)
@@ -49,9 +48,9 @@ def train_epoch(model:nn.Module, dataloader:DataLoader, optimizer:Optimizer, sch
         loss = F.binary_cross_entropy_with_logits(outputs, targets.float())
 
         loss = loss.mean()
+        loss.backward() 
         losses.append(loss.item())
 
-        loss.backward() 
         nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
         optimizer.step()
         scheduler.step()
@@ -78,16 +77,15 @@ def eval_model(model:nn.Module, dataloader:DataLoader):
     Returns:
         _type_: loss, score dictionary, final competition score
     """
-    model = model.eval()
+    model.eval()
     losses = []
     labels = None
     predictions = None
     
-    for data, targets in tqdm(dataloader):
+    for data in tqdm(dataloader):
         input_ids = data["input_ids"].to(CFG.device)
         attention_mask = data["attention_mask"].to(CFG.device)
-        targets = targets.type(torch.LongTensor)
-        targets = targets.to(CFG.device)
+        targets = data['target'].to(CFG.device)
         
         outputs = model(input_ids=input_ids, attention_mask=attention_mask)
 
@@ -120,6 +118,7 @@ def train_fold(model_name:str, model_type:str, scheduler_type:str, fold:int, tra
         val_fold_df (pd.DataFrame): val fold dataframe
         oof_file (pd.DataFrame): out of fold dataframe
         model_ckpt (str): path to model-checkpoint directory
+        is_segmented (bool, optional): is using word segmented or not. Defaults to False.
         save_last (bool, optional): save last epoch or not. Defaults to False.
 
     Returns:
@@ -157,14 +156,16 @@ def train_fold(model_name:str, model_type:str, scheduler_type:str, fold:int, tra
         score_report = pd.DataFrame.from_dict(score, orient="index")
         print(f"Train loss: {train_loss:.4f} competition_score: {competition_score:.4f}")
         print(score_report)
+        print()
         # Eval phase
         val_loss, score, competition_score = eval_model(model, val_dataloader)
         score_report = pd.DataFrame.from_dict(score, orient="index")
         print(f"Valid loss: {val_loss:.4f} competition_score: {competition_score:.4f}")
         print(score_report)
+        print()
         # Save best
         if competition_score > best_score:
-            print(f"Improved!!! {best_score:.4f} --> {competition_score:.4f}")
+            print(f"Improved!!! {best_score:.4f} --> {competition_score:.4f}\n")
             best_score = competition_score
             best_epoch = epoch + 1
             save_path = os.path.join(model_ckpt, f'best_model_fold_{fold}.bin')
@@ -183,7 +184,7 @@ def train_fold(model_name:str, model_type:str, scheduler_type:str, fold:int, tra
     model = model.eval()
     logits = [] # a list has len equal num examples and logits[0] has shape (30,)
 
-    for data, targets in tqdm(val_dataloader):
+    for data in tqdm(val_dataloader):
         input_ids = data['input_ids'].to(CFG.device)
         attention_mask = data['attention_mask'].to(CFG.device)
         
@@ -202,55 +203,3 @@ def train_fold(model_name:str, model_type:str, scheduler_type:str, fold:int, tra
     torch.cuda.empty_cache()
 
     return oof_file
-    
-# def infer(model_name:str, model_type:str, aspect:str, test_path:str, model_ckpt:str, output_path:str, submission:str):
-#     """Inference
-
-#     Args:
-#         model_name (str): model_name
-#         model_type (str): model_type
-#         aspect (str): aspect for training
-#         test_path (str): path to test_df
-#         model_ckpt (str): path to model-ckpt folder
-#         output_path (str): path to saved folder
-#         submission (str): path to submission file
-#     """
-#     test_df = pd.read_csv(test_path)
-#     tokenizer = create_tokenizer(model_name)
-#     test_dataloader = create_dataloader(test_df, aspect, tokenizer, CFG.batch_size, is_train=False)
-#     logits = []
-#     labels = torch.tensor([])
-#     for file in os.listdir(os.path.join(model_ckpt, aspect)):
-#         path = os.path.join(model_ckpt, aspect, file)
-#         model = create_model(model_name, model_type)
-#         model = model.to(CFG.device)
-#         model.load_state_dict(torch.load(path))
-#         fold_logits = []
-#         labels = torch.tensor([])
-#         model = model.eval()
-
-#         for data, targets in tqdm(test_dataloader):
-#             input_ids = data['input_ids'].to(CFG.device)
-#             attention_mask = data['attention_mask'].to(CFG.device)
-#             targets = targets.type(torch.LongTensor)
-#             targets = targets.to(CFG.device)
-#             labels = torch.cat((labels, targets.detach().cpu()))
-            
-#             outputs = model(input_ids=input_ids, attention_mask=attention_mask)
-#             for out in outputs.detach().cpu().numpy():
-#                 fold_logits.append(out)
-#         logits.append(fold_logits)       
-                 
-#     logits_ = np.array(logits).mean(axis=0)
-#     class_preds = np.argmax(logits_, axis=1)
-
-#     score = {}
-#     score['f1_score'] = get_f1_score(labels, torch.tensor(class_preds))
-#     score['r2_score'] = get_r2_score(labels, torch.tensor(class_preds))
-#     score['competition_score'] = get_score(labels, torch.tensor(class_preds))
-
-#     test_df['label_id'] = class_preds
-#     save_path = os.path.join(output_path, f"infer_test_{aspect}.csv")
-#     test_df.to_csv(save_path, index=False)
-    
-#     print(f"f1_score: {score['f1_score']:.4f} r2_score: {score['r2_score']:.4f} competition_score: {score['competition_score']:.4f}")
