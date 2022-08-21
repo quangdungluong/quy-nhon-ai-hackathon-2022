@@ -39,7 +39,7 @@ def main(args):
     for fold in CFG.train_folds:
         train_fold_df = folds[folds['fold'] != fold]
         val_fold_df = folds[folds['fold'] == fold]
-        oof_file = train_fold(model_name=args.model_name, model_type=args.model_type, scheduler_type=CFG.scheduler_type, fold=fold, train_fold_df=train_fold_df, val_fold_df=val_fold_df, oof_file=oof_file, model_ckpt=args.model_ckpt, is_segmented=is_segmented, is_preprocessing=args.is_preprocessing)
+        oof_file = train_fold(model_name=args.model_name, model_type=args.model_type, scheduler_type=CFG.scheduler_type, fold=fold, train_fold_df=train_fold_df, val_fold_df=val_fold_df, oof_file=oof_file, model_ckpt=args.model_ckpt, is_segmented=is_segmented)
 
     # save off_file
     oof_file.to_csv(os.path.join(args.output_path, f"oof.csv"), index=False, encoding="utf-8-sig")
@@ -66,7 +66,6 @@ if __name__ == "__main__":
     parser.add_argument("--train_folds", nargs='+', type=int, default=None, help="choose train folds")
     parser.add_argument("--scheduler_type", type=str, default="cosine", help="choose scheduler types")
     parser.add_argument("--batch_size", type=int, default=4, help="choose batch size")
-    parser.add_argument("--is_preprocessing", type=bool, default=True, help="is using preprocessing or not")
     parser.add_argument("--seed", type=int, default=2022, help="choose seed")
     args = parser.parse_args()
 

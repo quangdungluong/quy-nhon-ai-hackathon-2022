@@ -17,7 +17,7 @@ class HackathonDataset(Dataset):
         data['attention_mask']: torch.Size([batch_size, max_len])
         targets: torch.Size([batch_size, num_labels])
     '''
-    def __init__(self, df: DataFrame, tokenizer: Tokenizer, is_label=True, is_segmented=True, is_preprocessing=True) -> None:
+    def __init__(self, df: DataFrame, tokenizer: Tokenizer, is_label=True, is_segmented=True) -> None:
         """init
 
         Args:
@@ -31,23 +31,12 @@ class HackathonDataset(Dataset):
         self.df = self.df.reset_index() # reset index to avoid error when __getitem__
         self.tokenizer = tokenizer
         self.is_label = is_label
-        self.is_preprocessing = is_preprocessing
         self.aspects = ["giai_tri","luu_tru","nha_hang","an_uong","di_chuyen","mua_sam"]
         self.labels = self.get_target()
         if is_segmented:
             self.texts = df["Review_segmented"].values
         else:
             self.texts = df["Review"].values
-
-        # preprocessing
-        words_out = pd.read_csv('./out_word.csv')
-        origin_words = words_out['out_word'].values
-        replace_words = words_out['replace'].values
-        check_list = {}
-        for i in range(len(origin_words)):
-            check_list[origin_words[i]] = replace_words[i]
-        self.check_list = check_list
-        self.vocab = self.tokenizer.get_vocab()
             
     def get_target(self):
         df_dum = pd.get_dummies(self.df, columns = self.aspects)
@@ -65,17 +54,6 @@ class HackathonDataset(Dataset):
     
     def __getitem__(self, index):
         text = self.texts[index]
-        if self.is_preprocessing:
-            lower_text = text.lower()
-            list_word = lower_text.split()
-            list_preprocessed_words = []
-            for word in list_word:
-                if word in self.vocab or word not in self.check_list:
-                    list_preprocessed_words.append(str(word))
-                else:
-                    list_preprocessed_words.append(str(self.check_list[word]))
-            text = ' '.join(list_preprocessed_words)
-        
         encoding = self.tokenizer(text, max_length=CFG.max_len,
                                   padding='max_length',
                                   add_special_tokens=True,
@@ -92,7 +70,7 @@ class HackathonDataset(Dataset):
             'attention_mask': torch.tensor(encoding['attention_mask']).flatten()
         }
     
-def create_dataloader(df: DataFrame, tokenizer: Tokenizer, batch_size: int, is_label=True, is_train=True, is_segmented=False, is_preprocessing=True) -> DataLoader:
+def create_dataloader(df: DataFrame, tokenizer: Tokenizer, batch_size: int, is_label=True, is_train=True, is_segmented=False) -> DataLoader:
     """create dataloader
 
     Args:
@@ -102,10 +80,9 @@ def create_dataloader(df: DataFrame, tokenizer: Tokenizer, batch_size: int, is_l
         is_label (bool, optional): to avoid mistake, is the dataframe has label or not. Defaults to True.
         is_train (bool, optional): is the dataloader is train or not. Defaults to True.
         is_segmented (bool, optional): is using word segmented or not. Defaults to False.
-        is_preprocessing (bool, optional): is using preprocessing or not. Defaults to True.
 
     Returns:
         DataLoader: dataloader
     """
-    dataset = HackathonDataset(df, tokenizer, is_label, is_segmented, is_preprocessing)
+    dataset = HackathonDataset(df, tokenizer, is_label, is_segmented)
     return DataLoader(dataset, batch_size=batch_size, shuffle=True if is_train else False, num_workers=2)

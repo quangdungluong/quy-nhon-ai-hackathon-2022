@@ -104,7 +104,7 @@ def eval_model(model:nn.Module, dataloader:DataLoader):
         final_score += score["competition_score"] / len(score_dict)
     return loss, score_dict, final_score
 
-def train_fold(model_name:str, model_type:str, scheduler_type:str, fold:int, train_fold_df:pd.DataFrame, val_fold_df:pd.DataFrame, oof_file:pd.DataFrame, model_ckpt:str, is_segmented=False, is_preprocessing=True, save_last=False) -> pd.DataFrame:
+def train_fold(model_name:str, model_type:str, scheduler_type:str, fold:int, train_fold_df:pd.DataFrame, val_fold_df:pd.DataFrame, oof_file:pd.DataFrame, model_ckpt:str, is_segmented=False, save_last=False) -> pd.DataFrame:
     """Training 1 fold
 
     Args:
@@ -118,7 +118,6 @@ def train_fold(model_name:str, model_type:str, scheduler_type:str, fold:int, tra
         oof_file (pd.DataFrame): out of fold dataframe
         model_ckpt (str): path to model-checkpoint directory
         is_segmented (bool, optional): is using word segmented or not. Defaults to False.
-        is_preprocessing (bool, optional): is using preprocessing or not. Defaults to True.
         save_last (bool, optional): save last epoch or not. Defaults to False.
 
     Returns:
@@ -133,8 +132,8 @@ def train_fold(model_name:str, model_type:str, scheduler_type:str, fold:int, tra
     tokenizer = create_tokenizer(model_name)
     
     # Create dataloader
-    train_dataloader = create_dataloader(train_fold_df, tokenizer, CFG.batch_size, is_train=True, is_segmented=is_segmented, is_preprocessing=is_preprocessing)
-    val_dataloader = create_dataloader(val_fold_df, tokenizer, CFG.batch_size, is_train=False, is_segmented=is_segmented, is_preprocessing=is_preprocessing)
+    train_dataloader = create_dataloader(train_fold_df, tokenizer, CFG.batch_size, is_train=True, is_segmented=is_segmented)
+    val_dataloader = create_dataloader(val_fold_df, tokenizer, CFG.batch_size, is_train=False, is_segmented=is_segmented)
     
     # Create optimizer, scheduler, loss function
     if CFG.is_llrd : 
