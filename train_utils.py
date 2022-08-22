@@ -154,12 +154,14 @@ def train_fold(model_name:str, model_type:str, scheduler_type:str, fold:int, tra
         train_loss, score, competition_score = train_epoch(model, train_dataloader, optimizer, scheduler)
         score_report = pd.DataFrame.from_dict(score, orient="index")
         print(f"Train loss: {train_loss:.4f} competition_score: {competition_score:.4f}")
+        print(score)
         print(score_report)
         print()
         # Eval phase
         val_loss, score, competition_score = eval_model(model, val_dataloader)
         score_report = pd.DataFrame.from_dict(score, orient="index")
         print(f"Valid loss: {val_loss:.4f} competition_score: {competition_score:.4f}")
+        print(score)
         print(score_report)
         print()
         # Save best
