@@ -68,9 +68,6 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", type=int, default=4, help="choose batch size")
     parser.add_argument("--seed", type=int, default=2022, help="choose seed")
     args = parser.parse_args()
-
-    print(f'Seed {CFG.seed}')
-    seed_everything(CFG.seed)
     
     if "phobert" in args.model_name:
         CFG.max_len = 256
@@ -87,6 +84,9 @@ if __name__ == "__main__":
     CFG.increment_dropout_prob = args.increment_dropout_prob
     CFG.batch_size = args.batch_size
     CFG.seed = args.seed
+
+    print(f'Seed {CFG.seed}')
+    seed_everything(CFG.seed)
     
     if not os.path.exists(args.model_ckpt):
         os.makedirs(args.model_ckpt)
