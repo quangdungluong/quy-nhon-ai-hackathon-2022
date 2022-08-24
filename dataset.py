@@ -48,7 +48,7 @@ class HackathonDataset(Dataset):
         target_col = [f"{aspect}_{rating}" for aspect in self.aspects for rating in range(1, 6)]
         labels = df_dum[target_col].values
         
-        labels_smoothing = np.zeros(labels.shape)
+        labels_smoothing = []
         for i in range(len(labels)):
             label = labels[i]
             label_smoothing = np.zeros(label.shape)
@@ -63,10 +63,11 @@ class HackathonDataset(Dataset):
                         label_smoothing[i * 5 + idx - j - 1] = CFG.smoothing[j]
                 except:
                     continue
-            labels_smoothing[i] = label_smoothing
-            
+            labels_smoothing.append(label_smoothing)
+        
+        labels_smoothing = np.array(labels_smoothing)
         return labels, labels_smoothing
-
+    
     def __len__(self):
         return len(self.texts)
     
