@@ -67,6 +67,7 @@ if __name__ == "__main__":
     parser.add_argument("--scheduler_type", type=str, default="cosine", help="choose scheduler types")
     parser.add_argument("--batch_size", type=int, default=4, help="choose batch size")
     parser.add_argument("--seed", type=int, default=2022, help="choose seed")
+    parser.add_argument("--is_smoothing", type=bool, default=True, help="is smoothing or not")
     args = parser.parse_args()
     
     if "phobert" in args.model_name:
@@ -84,6 +85,7 @@ if __name__ == "__main__":
     CFG.increment_dropout_prob = args.increment_dropout_prob
     CFG.batch_size = args.batch_size
     CFG.seed = args.seed
+    CFG.is_smoothing = args.is_smoothing
 
     print(f'Seed {CFG.seed}')
     seed_everything(CFG.seed)

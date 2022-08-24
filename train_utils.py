@@ -41,11 +41,12 @@ def train_epoch(model:nn.Module, dataloader:DataLoader, optimizer:Optimizer, sch
         input_ids = data["input_ids"].to(CFG.device)
         attention_mask = data["attention_mask"].to(CFG.device)
         targets = data['target'].to(CFG.device)
+        targets_smoothing = data['target_smoothing'].to(CFG.device)
         
         optimizer.zero_grad()
         outputs = model(input_ids=input_ids, attention_mask=attention_mask)
 
-        loss = F.binary_cross_entropy_with_logits(outputs, targets.float())
+        loss = F.binary_cross_entropy_with_logits(outputs, targets_smoothing.float())
         loss = loss.mean()
         loss.backward() 
         losses.append(loss.item())
@@ -85,10 +86,11 @@ def eval_model(model:nn.Module, dataloader:DataLoader):
         input_ids = data["input_ids"].to(CFG.device)
         attention_mask = data["attention_mask"].to(CFG.device)
         targets = data['target'].to(CFG.device)
+        targets_smoothing = data['target_smoothing'].to(CFG.device)
         
         outputs = model(input_ids=input_ids, attention_mask=attention_mask)
 
-        loss = F.binary_cross_entropy_with_logits(outputs, targets.float())
+        loss = F.binary_cross_entropy_with_logits(outputs, targets_smoothing.float())
         loss = loss.mean()
         losses.append(loss.item())
         

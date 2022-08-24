@@ -7,7 +7,7 @@ import torch
 from pandas import DataFrame
 from tokenizers import Tokenizer
 from torch.utils.data import DataLoader, Dataset
-
+import numpy as np
 from config import CFG
 
 class HackathonDataset(Dataset):
@@ -32,7 +32,7 @@ class HackathonDataset(Dataset):
         self.tokenizer = tokenizer
         self.is_label = is_label
         self.aspects = ["giai_tri","luu_tru","nha_hang","an_uong","di_chuyen","mua_sam"]
-        self.labels = self.get_target()
+        self.labels, self.label_smoothing = self.get_target()
         if is_segmented:
             self.texts = df["Review_segmented"].values
         else:
@@ -47,7 +47,21 @@ class HackathonDataset(Dataset):
         df_dum.drop(drop_col, axis = 1, inplace = True) 
         target_col = [f"{aspect}_{rating}" for aspect in self.aspects for rating in range(1, 6)]
         labels = df_dum[target_col].values
-        return labels
+
+        label_smoothing = np.zeros(labels.shape)
+        for i in range(6):
+            aspect = list(labels[i * 5: i *5 + 5])
+            try :
+                idx = aspect.index(1)
+                label_smoothing[i * 5 + idx] = 1
+                for j in range(idx + 1, 5):
+                    label_smoothing[i * 5 + j] = CFG.smoothing[j - idx -1]
+                for j in range(0, idx):
+                    label_smoothing[i * 5 + idx - j - 1] = CFG.smoothing[j]
+            except:
+                continue
+
+        return labels, label_smoothing
 
     def __len__(self):
         return len(self.texts)
@@ -60,10 +74,12 @@ class HackathonDataset(Dataset):
                                   truncation=True)
         if self.is_label:
             labels = self.labels[index] # Get multi-labels of multi-aspects from the dataframe
+            label_smoothing = self.label_smoothing[index]
             return {
                 'input_ids': torch.tensor(encoding['input_ids']).flatten(),
                 'attention_mask': torch.tensor(encoding['attention_mask']).flatten(),
-                'target': torch.tensor(labels, dtype=torch.float)
+                'target': torch.tensor(labels, dtype=torch.float),
+                'target_smoothing': torch.tensor(label_smoothing, dtype=torch.float)
             }
         return {
             'input_ids': torch.tensor(encoding['input_ids']).flatten(),
