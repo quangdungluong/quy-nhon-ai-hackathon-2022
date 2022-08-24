@@ -17,7 +17,7 @@ from config import CFG
 from dataset import create_dataloader
 from metrics import get_score
 from models import create_model, create_tokenizer
-from utils import get_final_prediction, get_optimizer, get_scheduler, get_layerwise_lr_decay
+from utils import get_final_prediction, get_group_optimizer, get_optimizer, get_scheduler, get_layerwise_lr_decay
 
 
 def train_epoch(model:nn.Module, dataloader:DataLoader, optimizer:Optimizer, scheduler):
@@ -141,7 +141,10 @@ def train_fold(model_name:str, model_type:str, scheduler_type:str, fold:int, tra
         grouped_optimizer_params  = get_layerwise_lr_decay(model)
         optimizer = optim.AdamW(grouped_optimizer_params, lr = CFG.lr, correct_bias = True)
     else :
-        optimizer = get_optimizer(model)
+        if CFG.optimizer_type == "basic":
+            optimizer = get_optimizer(model)
+        else:
+            optimizer = get_group_optimizer(model)
 
     scheduler = get_scheduler(optimizer, scheduler_type, len(train_dataloader)*CFG.num_epochs)
     # Init to save best model
