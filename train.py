@@ -68,8 +68,8 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", type=int, default=4, help="choose batch size")
     parser.add_argument("--seed", type=int, default=2022, help="choose seed")
     parser.add_argument("--is_smoothing", type=bool, default=True, help="is smoothing or not")
-    parser.add_argument("--num_folds", type=int, default=5, help="is smoothing or not")
-    parser.add_argument("--optimizer_type", type=str, default="group", help="choose optimizer type, group or basic")
+    parser.add_argument("--num_folds", type=int, default=5, help="number of folds")
+    parser.add_argument("--optimizer_type", type=str, default="basic", help="choose optimizer type, group or basic")
     args = parser.parse_args()
     
     if "phobert" in args.model_name:
