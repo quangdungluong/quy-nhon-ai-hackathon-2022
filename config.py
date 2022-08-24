@@ -21,12 +21,16 @@ class CFG:
     llrd_ratio = 0.9
     num_epochs = 15
     max_len = 256
-    hidden_dropout_prob = 0.1
+    hidden_dropout_prob = 0.3
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     ### for multi-sample drop out
     num_drop = 5
-    increment_dropout_prob = 0.01
+    increment_dropout_prob = 0.05
+
+    ### for label smoothing
+    smoothing = [0.6, 0.2, 0.1, 0.05]
+    is_smoothing = True
 
     ## For select model name and model type
     model_dict = {"xlm-roberta-base": (XLMRobertaModel, XLMRobertaTokenizer, "xlm-roberta-base"),
