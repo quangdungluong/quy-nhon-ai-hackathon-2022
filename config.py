@@ -32,6 +32,9 @@ class CFG:
     smoothing = [0.6, 0.2, 0.1, 0.05]
     is_smoothing = True
 
+    ### for optimizer type
+    optimizer_type = "group"
+
     ## For select model name and model type
     model_dict = {"xlm-roberta-base": (XLMRobertaModel, XLMRobertaTokenizer, "xlm-roberta-base"),
                 "xlm-roberta-large": (XLMRobertaModel, XLMRobertaTokenizer, "xlm-roberta-large"),
