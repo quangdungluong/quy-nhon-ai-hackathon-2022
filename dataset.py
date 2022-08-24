@@ -47,21 +47,25 @@ class HackathonDataset(Dataset):
         df_dum.drop(drop_col, axis = 1, inplace = True) 
         target_col = [f"{aspect}_{rating}" for aspect in self.aspects for rating in range(1, 6)]
         labels = df_dum[target_col].values
-
-        label_smoothing = np.zeros(labels.shape)
-        for i in range(6):
-            aspect = list(labels[i * 5: i *5 + 5])
-            try :
-                idx = aspect.index(1)
-                label_smoothing[i * 5 + idx] = 1
-                for j in range(idx + 1, 5):
-                    label_smoothing[i * 5 + j] = CFG.smoothing[j - idx -1]
-                for j in range(0, idx):
-                    label_smoothing[i * 5 + idx - j - 1] = CFG.smoothing[j]
-            except:
-                continue
-
-        return labels, label_smoothing
+        
+        labels_smoothing = np.zeros(labels.shape)
+        for i in range(len(labels)):
+            label = labels[i]
+            label_smoothing = np.zeros(label.shape)
+            for i in range(6):
+                aspect = list(label[i * 5: i *5 + 5])
+                try :
+                    idx = aspect.index(1)
+                    label_smoothing[i * 5 + idx] = 1
+                    for j in range(idx + 1, 5):
+                        label_smoothing[i * 5 + j] = CFG.smoothing[j - idx -1]
+                    for j in range(0, idx):
+                        label_smoothing[i * 5 + idx - j - 1] = CFG.smoothing[j]
+                except:
+                    continue
+            labels_smoothing[i] = label_smoothing
+            
+        return labels, labels_smoothing
 
     def __len__(self):
         return len(self.texts)
