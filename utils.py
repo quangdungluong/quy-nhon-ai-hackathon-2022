@@ -134,14 +134,14 @@ def get_group_optimizer(model:nn.Module):
     group3 = ['layer.8.','layer.9.','layer.10.','layer.11.']
     group_all = ['layer.0.','layer.1.','layer.2.','layer.3.','layer.4.','layer.5.','layer.6.','layer.7.','layer.8.','layer.9.','layer.10.','layer.11.']
     optimizer_grouped_parameters = [
-        {'params' : [p for n, p in model.bert.named_parameters() if not any(nd in n for nd in no_decay) and not any(nd in n for nd in group_all)], 'weight_decay': CFG.weight_decay},
-        {'params' : [p for n, p in model.bert.named_parameters() if not any(nd in n for nd in no_decay) and any(nd in n for nd in group1)], 'weight_decay': CFG.weight_decay, 'lr': learning_rate / 2.6},
-        {'params' : [p for n, p in model.bert.named_parameters() if not any(nd in n for nd in no_decay) and any(nd in n for nd in group2)], 'weight_decay': CFG.weight_decay, 'lr': learning_rate},
-        {'params' : [p for n, p in model.bert.named_parameters() if not any(nd in n for nd in no_decay) and any(nd in n for nd in group3)], 'weight_decay': CFG.weight_decay, 'lr': learning_rate * 2.6},
-        {'params' : [p for n, p in model.bert.named_parameters() if any(nd in n for nd in no_decay) and not any(nd in n for nd in group_all)], 'weight_decay': 0.0},
-        {'params' : [p for n, p in model.bert.named_parameters() if any(nd in n for nd in no_decay) and any(nd in n for nd in group1)], 'weight_decay': 0.0, 'lr': learning_rate / 2.6},
-        {'params' : [p for n, p in model.bert.named_parameters() if any(nd in n for nd in no_decay) and any(nd in n for nd in group2)], 'weight_decay': 0.0, 'lr': learning_rate},
-        {'params' : [p for n, p in model.bert.named_parameters() if any(nd in n for nd in no_decay) and any(nd in n for nd in group3)], 'weight_decay': 0.0, 'lr': learning_rate * 2.6},
+        {'params' : [p for n, p in model.model.named_parameters() if not any(nd in n for nd in no_decay) and any(nd in n for nd in group1)], 'weight_decay': CFG.weight_decay, 'lr': learning_rate / 2.6},
+        {'params' : [p for n, p in model.model.named_parameters() if not any(nd in n for nd in no_decay) and not any(nd in n for nd in group_all)], 'weight_decay': CFG.weight_decay},
+        {'params' : [p for n, p in model.model.named_parameters() if not any(nd in n for nd in no_decay) and any(nd in n for nd in group2)], 'weight_decay': CFG.weight_decay, 'lr': learning_rate},
+        {'params' : [p for n, p in model.model.named_parameters() if not any(nd in n for nd in no_decay) and any(nd in n for nd in group3)], 'weight_decay': CFG.weight_decay, 'lr': learning_rate * 2.6},
+        {'params' : [p for n, p in model.model.named_parameters() if any(nd in n for nd in no_decay) and not any(nd in n for nd in group_all)], 'weight_decay': 0.0},
+        {'params' : [p for n, p in model.model.named_parameters() if any(nd in n for nd in no_decay) and any(nd in n for nd in group1)], 'weight_decay': 0.0, 'lr': learning_rate / 2.6},
+        {'params' : [p for n, p in model.model.named_parameters() if any(nd in n for nd in no_decay) and any(nd in n for nd in group2)], 'weight_decay': 0.0, 'lr': learning_rate},
+        {'params' : [p for n, p in model.model.named_parameters() if any(nd in n for nd in no_decay) and any(nd in n for nd in group3)], 'weight_decay': 0.0, 'lr': learning_rate * 2.6},
         {'params' : [p for n, p in model.named_parameters() if "bert" not in n], 'lr' : CFG.LR, "momentum" : 0.99},
     ]
     optimizer = optim.AdamW(optimizer_grouped_parameters, lr=CFG.lr)
