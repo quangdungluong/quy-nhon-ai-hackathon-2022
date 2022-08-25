@@ -38,8 +38,6 @@ class HackathonDataset(Dataset):
             self.texts = df["Review_segmented"].values
         else:
             self.texts = df["Review"].values
-        self.replace_dict = {"Nvien" : "nhân viên", "Nv": "nhân viên", "NV":"nhân viên", "nvien": "nhân viên", "nv":"nhân viên", "NVien":"nhân viên",
-                            "ks":"khách sạn", "ksan":"khách sạn", "Ks":"khách sạn", "KS":"khách sạn", "Ksan":"khách sạn"}
 
     def get_target(self):
         df_dum = pd.get_dummies(self.df, columns = self.aspects)
@@ -76,14 +74,6 @@ class HackathonDataset(Dataset):
     
     def __getitem__(self, index):
         text = self.texts[index]
-        
-        if CFG.preprocess:
-            text_ls = text.split()
-            for idx, word in enumerate(text_ls):
-                if word in self.replace_dict:
-                    text_ls[idx] = self.replace_dict[word]
-            text = " ".join(text_ls)
-
         encoding = self.tokenizer(text, max_length=CFG.max_len,
                                   padding='max_length',
                                   add_special_tokens=True,

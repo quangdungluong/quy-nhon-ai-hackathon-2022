@@ -202,3 +202,21 @@ def get_layerwise_lr_decay(model:nn.Module):
             },
         ]
     return optimizer_grouped_parameters
+
+def preprocess(text:str) -> str:
+    """Replae acronym words
+
+    Args:
+        text (str): original text
+
+    Returns:
+        str: returned text
+    """
+    replace_dict = {"Nvien" : "nhân viên", "Nv": "nhân viên", "NV":"nhân viên", "nvien": "nhân viên", "nv":"nhân viên", "NVien":"nhân viên",
+                            "ks":"khách sạn", "ksan":"khách sạn", "Ks":"khách sạn", "KS":"khách sạn", "Ksan":"khách sạn"}
+    text_ls = text.split()
+    for idx, word in enumerate(text_ls):
+        if word in replace_dict:
+            text_ls[idx] = replace_dict[word]
+    text = " ".join(text_ls)
+    return text
