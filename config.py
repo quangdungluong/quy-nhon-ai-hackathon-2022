@@ -33,7 +33,10 @@ class CFG:
     is_smoothing = True
 
     ### for optimizer type
-    optimizer_type = "group"
+    optimizer_type = "basic"
+
+    ### for preprocess
+    preprocess = True
 
     ## For select model name and model type
     model_dict = {"xlm-roberta-base": (XLMRobertaModel, XLMRobertaTokenizer, "xlm-roberta-base"),
