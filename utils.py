@@ -212,19 +212,21 @@ def preprocess(text:str) -> str:
     Returns:
         str: returned text
     """
+    # replace_dict = {"Nvien" : "nhân viên", "Nv": "nhân viên", "NV":"nhân viên", "nvien": "nhân viên", "nv":"nhân viên", "NVien":"nhân viên",
+    #                         "ks":"khách sạn", "ksan":"khách sạn", "Ks":"khách sạn", "KS":"khách sạn", "Ksan":"khách sạn",
+    #                         "cf":"cà phê", "Cf":"cà phê", "CF":"cà phê", "coffee":"cà phê",
+    #                         "qn":"quy nhơn", "Qn":"quy nhơn", "QN":"quy nhơn",
+    #                         "chổ": "chỗ", "Chổ":"Chỗ",
+    #                         "bt":"bình thường",
+    #                         "lẫu":"lẩu",
+    #                         "tp":"thành phố", "TP":"thành phố", "Tp":"thành phố", "tpho":"thành phố",
+    #                         "nhìu":"nhiều",
+    #                         "mk":"mình",
+    #                         "nc":"nước",
+    #                         "uốg":"uống",
+    #                         "mn":"mọi người", "mng":"mọi người", "Mn":"mọi người", "Mng":"mọi người"}
     replace_dict = {"Nvien" : "nhân viên", "Nv": "nhân viên", "NV":"nhân viên", "nvien": "nhân viên", "nv":"nhân viên", "NVien":"nhân viên",
-                            "ks":"khách sạn", "ksan":"khách sạn", "Ks":"khách sạn", "KS":"khách sạn", "Ksan":"khách sạn",
-                            "cf":"cà phê", "Cf":"cà phê", "CF":"cà phê", "coffee":"cà phê",
-                            "qn":"quy nhơn", "Qn":"quy nhơn", "QN":"quy nhơn",
-                            "chổ": "chỗ", "Chổ":"Chỗ",
-                            "bt":"bình thường",
-                            "lẫu":"lẩu",
-                            "tp":"thành phố", "TP":"thành phố", "Tp":"thành phố", "tpho":"thành phố",
-                            "nhìu":"nhiều",
-                            "mk":"mình",
-                            "nc":"nước",
-                            "uốg":"uống",
-                            "mn":"mọi người", "mng":"mọi người", "Mn":"mọi người", "Mng":"mọi người"}
+                            "ks":"khách sạn", "ksan":"khách sạn", "Ks":"khách sạn", "KS":"khách sạn", "Ksan":"khách sạn"}
     text_ls = text.split()
     for idx, word in enumerate(text_ls):
         if word in replace_dict:
