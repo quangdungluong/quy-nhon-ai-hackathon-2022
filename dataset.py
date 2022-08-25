@@ -9,6 +9,7 @@ from tokenizers import Tokenizer
 from torch.utils.data import DataLoader, Dataset
 import numpy as np
 from config import CFG
+from vncorenlp import VnCoreNLP
 
 class HackathonDataset(Dataset):
     '''Custom Dataset
@@ -37,7 +38,7 @@ class HackathonDataset(Dataset):
             self.texts = df["Review_segmented"].values
         else:
             self.texts = df["Review"].values
-            
+
     def get_target(self):
         df_dum = pd.get_dummies(self.df, columns = self.aspects)
         drop_col = []
