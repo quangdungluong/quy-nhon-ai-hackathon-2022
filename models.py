@@ -261,6 +261,20 @@ class DropCatModel(nn.Module):
                 outputs += (self.classifier(drop(cat_output)) / num_dps)
         return outputs
 
+class CatModel(nn.Module):    
+    def __init__(self, model, model_ckpt):        
+        super(CatModel, self).__init__()        
+        self.bert = model.from_pretrained(model_ckpt)        
+        self.dropout = nn.Dropout(0.5)        
+        self.classifier = nn.Linear(4 * self.bert.config.hidden_size, CFG.num_labels)    
+
+    def forward(self, input_ids, attention_mask):        
+        bert_output = self.bert(input_ids = input_ids, attention_mask = attention_mask, output_hidden_states = True)        
+        cat_output = torch.cat((bert_output[2][-1][:,0, ...], bert_output[2][-2][:,0, ...], bert_output[2][-3][:,0, ...], bert_output[2][-4][:,0, ...]),-1)       
+        outputs = self.dropout(cat_output)        
+        outputs = self.classifier(outputs)
+        return outputs
+
 def create_model(model_name:str, model_type:str) -> nn.Module:
     """Create model
 
@@ -288,6 +302,8 @@ def create_model(model_name:str, model_type:str) -> nn.Module:
         return AttentionModel(model, model_ckpt)
     elif model_type == "weight_pool":
         return WLPDropModel(model, model_ckpt)
+    elif model_type == "catmodel":
+        return CatModel(model, model_ckpt)
     return CustomModel(model, model_ckpt)
 
 
