@@ -75,7 +75,7 @@ if __name__ == "__main__":
     parser.add_argument("--num_folds", type=int, default=5, help="number of folds")
     parser.add_argument("--optimizer_type", type=str, default="basic", help="choose optimizer type, group or basic")
     parser.add_argument("--preprocess", type=bool, default=False, help="replace word or not")
-    parser.add_argument("--smoothing", nargs='+', type=int, default=[0.6, 0.2, 0.1, 0.05], help="choose smoothing params")
+    parser.add_argument("--smoothing", nargs='+', type=float, default=[0.6, 0.2, 0.1, 0.05], help="choose smoothing params")
     args = parser.parse_args()
     
     if "phobert" in args.model_name:
