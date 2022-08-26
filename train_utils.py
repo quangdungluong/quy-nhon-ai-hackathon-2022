@@ -17,7 +17,8 @@ from config import CFG
 from dataset import create_dataloader
 from metrics import get_score
 from models import create_model, create_tokenizer
-from utils import get_final_prediction, get_group_optimizer, get_optimizer, get_scheduler, get_layerwise_lr_decay
+from utils import (get_final_prediction, get_group_optimizer,
+                   get_layerwise_lr_decay, get_optimizer, get_scheduler)
 
 
 def train_epoch(model:nn.Module, dataloader:DataLoader, optimizer:Optimizer, scheduler):
@@ -27,7 +28,7 @@ def train_epoch(model:nn.Module, dataloader:DataLoader, optimizer:Optimizer, sch
         model (nn.Module): model
         dataloader (DataLoader): dataloader
         optimizer (Optimizer): optimizer
-        scheduler (optimization): scheduler
+        scheduler (Scheduler): scheduler
 
     Returns:
         _type_: loss, score dictionary, final competition score

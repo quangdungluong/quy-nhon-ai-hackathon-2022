@@ -2,14 +2,15 @@
 Dataset
 """
 
+import numpy as np
 import pandas as pd
 import torch
 from pandas import DataFrame
 from tokenizers import Tokenizer
 from torch.utils.data import DataLoader, Dataset
-import numpy as np
+
 from config import CFG
-from vncorenlp import VnCoreNLP
+
 
 class HackathonDataset(Dataset):
     '''Custom Dataset
