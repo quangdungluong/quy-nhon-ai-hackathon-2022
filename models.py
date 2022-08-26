@@ -199,9 +199,9 @@ class MeanMaxModel(nn.Module):
     def forward(self, input_ids, attention_mask):
         outputs = self.model(input_ids=input_ids, attention_mask=attention_mask, output_hidden_states=True)
         avg_pool = torch.mean(outputs.last_hidden_state, 1)
-        max_pool = torch.max(outputs.last_hidden_state, 1)
+        _, max_pool = torch.max(outputs.last_hidden_state, 1)
         x = torch.cat((avg_pool, max_pool), 1)
-        x =  self.dropout(x)
+        x = self.dropout(x)
         x = self.classifier(x)
         return x
     
