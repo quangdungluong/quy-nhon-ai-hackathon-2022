@@ -16,16 +16,16 @@ import transformers
 transformers.logging.set_verbosity_error()
 from vncorenlp import VnCoreNLP
 
-def main(args):
-    train_df = pd.read_csv(args.train_path)
+def main():
+    train_df = pd.read_csv(CFG.train_path)
     is_segmented = False
 
     if CFG.preprocess:
         train_df["Review"] = train_df["Review"].apply(lambda x: preprocess(x))
         
-    if args.rdrsegmenter_path is not None:
+    if CFG.rdrsegmenter_path is not None:
         is_segmented = True
-        rdrsegmenter = VnCoreNLP(args.rdrsegmenter_path, annotators="wseg", max_heap_size='-Xmx500m') 
+        rdrsegmenter = VnCoreNLP(CFG.rdrsegmenter_path, annotators="wseg", max_heap_size='-Xmx500m') 
         train_df["Review_segmented"] = train_df["Review"].apply(lambda x: ' '.join([' '.join(sent) for sent in rdrsegmenter.tokenize(x)]))
     
     # Split MultilabelStratifiedKFold
@@ -43,10 +43,10 @@ def main(args):
     for fold in CFG.train_folds:
         train_fold_df = folds[folds['fold'] != fold]
         val_fold_df = folds[folds['fold'] == fold]
-        oof_file = train_fold(model_name=args.model_name, model_type=args.model_type, scheduler_type=CFG.scheduler_type, fold=fold, train_fold_df=train_fold_df, val_fold_df=val_fold_df, oof_file=oof_file, model_ckpt=args.model_ckpt, is_segmented=is_segmented)
+        oof_file = train_fold(model_name=CFG.model_name, model_type=CFG.model_type, scheduler_type=CFG.scheduler_type, fold=fold, train_fold_df=train_fold_df, val_fold_df=val_fold_df, oof_file=oof_file, model_ckpt=CFG.model_ckpt, is_segmented=is_segmented)
 
     # save off_file
-    oof_file.to_csv(os.path.join(args.output_path, f"oof.csv"), index=False, encoding="utf-8-sig")
+    oof_file.to_csv(os.path.join(CFG.output_path, f"oof.csv"), index=False, encoding="utf-8-sig")
 
 
 if __name__ == "__main__":
@@ -75,6 +75,7 @@ if __name__ == "__main__":
     parser.add_argument("--num_folds", type=int, default=5, help="number of folds")
     parser.add_argument("--optimizer_type", type=str, default="basic", help="choose optimizer type, group or basic")
     parser.add_argument("--preprocess", type=bool, default=False, help="replace word or not")
+    parser.add_argument("--smoothing", nargs='+', type=int, default=[0.6, 0.2, 0.1, 0.05], help="choose smoothing params")
     args = parser.parse_args()
     
     if "phobert" in args.model_name:
@@ -84,7 +85,13 @@ if __name__ == "__main__":
         for fold in args.train_folds:
             train_folds.append(fold)
         CFG.train_folds = train_folds
-        
+    
+    CFG.model_name = args.model_name
+    CFG.model_type = args.model_type
+    CFG.train_path = args.train_path
+    CFG.model_ckpt = args.model_ckpt
+    CFG.output_path = args.output_path
+    CFG.rdrsegmenter_path = args.rdrsegmenter_path
     CFG.lr = args.lr
     CFG.hidden_dropout_prob = args.dropout
     CFG.num_epochs = args.num_epochs
@@ -96,6 +103,7 @@ if __name__ == "__main__":
     CFG.num_folds = args.num_folds
     CFG.optimizer_type = args.optimizer_type
     CFG.preprocess = args.preprocess
+    CFG.smoothing = args.smoothing
 
     print(f'Seed {CFG.seed}')
     seed_everything(CFG.seed)
@@ -105,6 +113,6 @@ if __name__ == "__main__":
     if not os.path.exists(args.output_path):
         os.makedirs(args.output_path)
 
-    main(args)
+    main()
 
     
