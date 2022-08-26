@@ -3,18 +3,19 @@ import os
 import warnings
 
 import pandas as pd
-from sklearn.model_selection import KFold
 from iterstrat.ml_stratifiers import MultilabelStratifiedKFold
+from sklearn.model_selection import KFold
 
 from config import CFG
 from train_utils import train_fold
-from utils import seed_everything, preprocess
+from utils import preprocess, seed_everything
 
 warnings.filterwarnings("ignore")
 import transformers
 
 transformers.logging.set_verbosity_error()
 from vncorenlp import VnCoreNLP
+
 
 def main():
     train_df = pd.read_csv(CFG.train_path)
@@ -45,7 +46,7 @@ def main():
         val_fold_df = folds[folds['fold'] == fold]
         oof_file = train_fold(model_name=CFG.model_name, model_type=CFG.model_type, scheduler_type=CFG.scheduler_type, fold=fold, train_fold_df=train_fold_df, val_fold_df=val_fold_df, oof_file=oof_file, model_ckpt=CFG.model_ckpt, is_segmented=is_segmented)
 
-    # save off_file
+    # save oof_file
     oof_file.to_csv(os.path.join(CFG.output_path, f"oof.csv"), index=False, encoding="utf-8-sig")
 
 
@@ -67,7 +68,7 @@ if __name__ == "__main__":
     parser.add_argument("--lr", type=float, default=2e-5, help="change learning rate")
     parser.add_argument("--dropout", type=float, default=0.1, help="change hidden dropout probability")
     parser.add_argument("--increment_dropout_prob", type=float, default=0.1, help="increment_dropout_prob")
-    parser.add_argument("--train_folds", nargs='+', type=int, default=None, help="choose train folds")
+    parser.add_argument("--train_folds", nargs='+', type=int, default=[0, 1, 2, 3, 4], help="choose train folds")
     parser.add_argument("--scheduler_type", type=str, default="cosine", help="choose scheduler types")
     parser.add_argument("--batch_size", type=int, default=4, help="choose batch size")
     parser.add_argument("--seed", type=int, default=2022, help="choose seed")
@@ -78,14 +79,10 @@ if __name__ == "__main__":
     parser.add_argument("--smoothing", nargs='+', type=float, default=[0.6, 0.2, 0.1, 0.05], help="choose smoothing params")
     args = parser.parse_args()
     
+    
     if "phobert" in args.model_name:
         CFG.max_len = 256
-    if args.train_folds is not None:
-        train_folds = []
-        for fold in args.train_folds:
-            train_folds.append(fold)
-        CFG.train_folds = train_folds
-    
+    CFG.train_folds = args.train_folds
     CFG.model_name = args.model_name
     CFG.model_type = args.model_type
     CFG.train_path = args.train_path
