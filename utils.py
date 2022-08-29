@@ -203,7 +203,7 @@ def get_layerwise_lr_decay(model:nn.Module):
     return optimizer_grouped_parameters
 
 def preprocess(text:str) -> str:
-    """Replae acronym words
+    """Replace acronym words
 
     Args:
         text (str): original text
