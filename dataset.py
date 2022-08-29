@@ -41,6 +41,11 @@ class HackathonDataset(Dataset):
             self.texts = df["Review"].values
 
     def get_target(self):
+        """Get target
+
+        Returns:
+            _type_: return targets and smoothing targets
+        """
         df_dum = pd.get_dummies(self.df, columns = self.aspects)
         drop_col = []
         for col in df_dum.columns:
