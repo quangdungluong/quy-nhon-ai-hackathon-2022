@@ -64,10 +64,11 @@ class HackathonDataset(Dataset):
                 try :
                     idx = aspect.index(1)
                     label_smoothing[i * 5 + idx] = 1
-                    for j in range(idx + 1, 5):
-                        label_smoothing[i * 5 + j] = CFG.smoothing[j - idx -1]
-                    for j in range(0, idx):
-                        label_smoothing[i * 5 + idx - j - 1] = CFG.smoothing[j]
+                    if i == 0 or i ==2 or i == 3:
+                        for j in range(idx + 1, 5):
+                            label_smoothing[i * 5 + j] = CFG.smoothing[j - idx -1]
+                        for j in range(0, idx):
+                            label_smoothing[i * 5 + idx - j - 1] = CFG.smoothing[j]
                 except:
                     continue
             labels_smoothing.append(label_smoothing)
