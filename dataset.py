@@ -1,5 +1,6 @@
 """
 Dataset
+Return a dictionary is faster than a tuple
 """
 
 import numpy as np
@@ -15,9 +16,10 @@ from config import CFG
 class HackathonDataset(Dataset):
     '''Custom Dataset
         Return:
-        data['input_ids']: torch.Size([batch_size, max_len])
-        data['attention_mask']: torch.Size([batch_size, max_len])
+        input_ids: torch.Size([batch_size, max_len])
+        attention_mask: torch.Size([batch_size, max_len])
         targets: torch.Size([batch_size, num_labels])
+        targets_smoothing: torch.Size([batch_size, num_labels])
     '''
     def __init__(self, df: DataFrame, tokenizer: Tokenizer, is_label=True, is_segmented=True) -> None:
         """init
