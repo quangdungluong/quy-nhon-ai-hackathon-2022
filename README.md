@@ -10,6 +10,7 @@
 - Pseudo-labelling
 - PhoBert
 - Label Smoothing
+- Cross-Validation
 
 ## Preprocessing:
 - None. That's NLP in 2022
