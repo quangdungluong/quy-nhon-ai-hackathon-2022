@@ -8,12 +8,14 @@ from transformers import (PhobertTokenizer, RobertaModel,
 
 class CFG:
     seed = 2022
-    model_name = "phobert-base"
-    model_type = "4_hidden"
+
+    model_name = "phobert-base" # ["xlm-roberta-base", "xlm-roberta-large", "phobert-base", "phobert-large"]
+    model_type = "4_hidden" # ["4_hidden", "classifier_head", "mean_max", "electra", "multi_drop", "4_hidden_drop", "attention", "weight_pool", "catmodel"]
     train_path = "./train_final.csv"
     model_ckpt = "/kaggle/working/ckpt"
     output_path = "/kaggle/working/output"
     rdrsegmenter_path = None
+
     num_labels = 6*5 # 6 aspects and 5 ratings for each
     num_folds = 5
     train_folds = [0, 1, 2, 3, 4]
@@ -39,7 +41,7 @@ class CFG:
     is_smoothing = True
 
     ### for optimizer type
-    optimizer_type = "basic"
+    optimizer_type = "basic" # ["basic", "group"]
 
     ### for preprocess
     preprocess = True
