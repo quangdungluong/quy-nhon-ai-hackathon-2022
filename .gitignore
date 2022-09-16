@@ -7,3 +7,7 @@ VnCoreNLP
 *.tar
 *.ipynb
 ensemble_oof.py
+.idea
+vinai
+*.bin
+*.pem

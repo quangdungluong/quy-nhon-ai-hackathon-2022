@@ -1,12 +1,10 @@
 import torch
-import numpy as np
 import torch.nn as nn
-import torch.nn.functional as F
 from tokenizers import Tokenizer
 from transformers.models.deberta_v2.modeling_deberta_v2 import StableDropout
-
-from config import CFG
-
+import app_config as config
+import numpy as np
+import torch.nn.functional as F
 
 def get_dropouts(num:int, start_prob:float, increment:float) -> nn.Module:
     """Get multiple dropouts
@@ -56,12 +54,12 @@ class AttentionPooling(nn.Module):
         self.num_hidden_layers = num_layers
         self.hidden_size = hidden_size
         self.hiddendim_fc = hiddendim_fc
-        self.dropout = nn.Dropout(CFG.hidden_dropout_prob)
+        self.dropout = nn.Dropout(config.hidden_dropout_prob)
 
         q_t = np.random.normal(loc=0.0, scale=0.1, size=(1, self.hidden_size))
-        self.q = nn.Parameter(torch.from_numpy(q_t)).float().to(CFG.device)
+        self.q = nn.Parameter(torch.from_numpy(q_t)).float().to(config.device)
         w_ht = np.random.normal(loc=0.0, scale=0.1, size=(self.hidden_size, self.hiddendim_fc))
-        self.w_h = nn.Parameter(torch.from_numpy(w_ht)).float().to(CFG.device)
+        self.w_h = nn.Parameter(torch.from_numpy(w_ht)).float().to(config.device)
 
     def forward(self, all_hidden_states):
         hidden_states = torch.stack([all_hidden_states[layer_i][:, 0].squeeze()
@@ -84,8 +82,8 @@ class AttentionModel(nn.Module):
 
         self.bert = model.from_pretrained(model_ckpt)
         self.pooler = AttentionPooling(self.bert.config.num_hidden_layers, self.bert.config.hidden_size, hiddendim_fc)
-        self.drop = get_dropouts(num = CFG.num_drop, start_prob = CFG.hidden_dropout_prob, increment= CFG.increment_dropout_prob)
-        self.classifier = nn.Linear(hiddendim_fc, CFG.num_labels)
+        self.drop = get_dropouts(num = config.num_drop, start_prob = config.hidden_dropout_prob, increment= config.increment_dropout_prob)
+        self.classifier = nn.Linear(hiddendim_fc, config.num_labels)
 
     def forward(self, input_ids, attention_mask):
         bert_output = self.bert(input_ids = input_ids, attention_mask = attention_mask, output_hidden_states = True)
@@ -108,8 +106,8 @@ class WLPDropModel(nn.Module):
 
         self.bert = model.from_pretrained(model_ckpt)
         self.pooler = WeightedLayerPooling(num_hidden_layers = self.bert.config.num_hidden_layers, layer_start = layer_start, layer_weights=None)
-        self.drop = get_dropouts(num = CFG.num_drop, start_prob = CFG.hidden_dropout_prob, increment= CFG.increment_dropout_prob)
-        self.classifier = nn.Linear(self.bert.config.hidden_size, CFG.num_labels)
+        self.drop = get_dropouts(num = config.num_drop, start_prob = config.hidden_dropout_prob, increment= config.increment_dropout_prob)
+        self.classifier = nn.Linear(self.bert.config.hidden_size, config.num_labels)
 
     def forward(self, input_ids, attention_mask):
         bert_output = self.bert(input_ids = input_ids, attention_mask = attention_mask, output_hidden_states = True)
@@ -136,8 +134,8 @@ class CustomModel(nn.Module):
         super().__init__()
         self.model = model.from_pretrained(model_ckpt)
         self.pooling = MeanPooling()
-        self.dropout = nn.Dropout(p=CFG.hidden_dropout_prob)
-        self.classifer = nn.Linear(self.model.config.hidden_size, CFG.num_labels)
+        self.dropout = nn.Dropout(p=config.hidden_dropout_prob)
+        self.classifer = nn.Linear(self.model.config.hidden_size, config.num_labels)
         
     def forward(self, input_ids, attention_mask):
         outputs = self.model(input_ids=input_ids, attention_mask=attention_mask, output_hidden_states=True)
@@ -153,7 +151,7 @@ class HackathonModel(nn.Module):
     def __init__(self, model, model_ckpt) -> None:
         super().__init__()
         self.model = model.from_pretrained(model_ckpt)
-        self.classifier = nn.Linear(4*self.model.config.hidden_size, CFG.num_labels)
+        self.classifier = nn.Linear(4*self.model.config.hidden_size, config.num_labels)
         
     def forward(self, input_ids, attention_mask):
         outputs = self.model(input_ids=input_ids, attention_mask=attention_mask, output_hidden_states=True)
@@ -169,8 +167,8 @@ class ClassifierHead(nn.Module):
     def __init__(self, model, model_ckpt) -> None:
         super().__init__()
         self.model = model.from_pretrained(model_ckpt)
-        self.cnn = nn.Conv1d(self.model.config.hidden_size, CFG.num_labels, kernel_size=1)
-        self.classifier = nn.Linear(self.model.config.hidden_size, CFG.num_labels)
+        self.cnn = nn.Conv1d(self.model.config.hidden_size, config.num_labels, kernel_size=1)
+        self.classifier = nn.Linear(self.model.config.hidden_size, config.num_labels)
         
     def forward(self, input_ids, attention_mask):
         outputs = self.model(input_ids=input_ids, attention_mask=attention_mask, output_hidden_states=True)
@@ -193,15 +191,15 @@ class MeanMaxModel(nn.Module):
     def __init__(self, model, model_ckpt) -> None:
         super().__init__()
         self.model = model.from_pretrained(model_ckpt)
-        self.dropout = nn.Dropout(CFG.hidden_dropout_prob)
-        self.classifier = nn.Linear(2*self.model.config.hidden_size, CFG.num_labels)
+        self.dropout = nn.Dropout(config.hidden_dropout_prob)
+        self.classifier = nn.Linear(2*self.model.config.hidden_size, config.num_labels)
         
     def forward(self, input_ids, attention_mask):
         outputs = self.model(input_ids=input_ids, attention_mask=attention_mask, output_hidden_states=True)
         avg_pool = torch.mean(outputs.last_hidden_state, 1)
-        max_pool, _ = torch.max(outputs.last_hidden_state, 1)
+        max_pool = torch.max(outputs.last_hidden_state, 1)
         x = torch.cat((avg_pool, max_pool), 1)
-        x = self.dropout(x)
+        x =  self.dropout(x)
         x = self.classifier(x)
         return x
     
@@ -209,7 +207,7 @@ class ElectraClassification(nn.Module):
     def __init__(self, model, model_ckpt) -> None:
         super().__init__()
         self.model = model.from_pretrained(model_ckpt)
-        self.classifier = nn.Linear(4*self.model.config.hidden_size, CFG.num_labels)
+        self.classifier = nn.Linear(4*self.model.config.hidden_size, config.num_labels)
         
     def forward(self, input_ids, attention_mask):
         outputs = self.model(input_ids=input_ids, attention_mask=attention_mask, output_hidden_states=True)
@@ -224,8 +222,8 @@ class MultiDropModel(nn.Module):
 
         self.bert = model.from_pretrained(model_ckpt)
         self.pooler = MeanPooling()
-        self.drop = get_dropouts(num = CFG.num_drop, start_prob = CFG.hidden_dropout_prob, increment= CFG.increment_dropout_prob)
-        self.classifier = nn.Linear(self.bert.config.hidden_size, CFG.num_labels)
+        self.drop = get_dropouts(num = config.num_drop, start_prob = config.hidden_dropout_prob, increment= config.increment_dropout_prob)
+        self.classifier = nn.Linear(self.bert.config.hidden_size, config.num_labels)
 
     def forward(self, input_ids, attention_mask):
         bert_output = self.bert(input_ids = input_ids, attention_mask = attention_mask, output_hidden_states=True)
@@ -246,8 +244,8 @@ class DropCatModel(nn.Module):
         super(DropCatModel, self).__init__()
 
         self.model = model.from_pretrained(model_ckpt)
-        self.drop = get_dropouts(num = CFG.num_drop, start_prob = CFG.hidden_dropout_prob, increment= CFG.increment_dropout_prob)
-        self.classifier = nn.Linear(4 * self.model.config.hidden_size, CFG.num_labels)
+        self.drop = get_dropouts(num = config.num_drop, start_prob = config.hidden_dropout_prob, increment= config.increment_dropout_prob)
+        self.classifier = nn.Linear(4 * self.model.config.hidden_size, config.num_labels)
 
     def forward(self, input_ids, attention_mask):
         outputs = self.model(input_ids = input_ids, attention_mask = attention_mask, output_hidden_states = True)
@@ -260,20 +258,7 @@ class DropCatModel(nn.Module):
             else :
                 outputs += (self.classifier(drop(cat_output)) / num_dps)
         return outputs
-
-class CatModel(nn.Module):    
-    def __init__(self, model, model_ckpt):        
-        super(CatModel, self).__init__()        
-        self.bert = model.from_pretrained(model_ckpt)        
-        self.dropout = nn.Dropout(0.5)        
-        self.classifier = nn.Linear(4 * self.bert.config.hidden_size, CFG.num_labels)    
-
-    def forward(self, input_ids, attention_mask):        
-        bert_output = self.bert(input_ids = input_ids, attention_mask = attention_mask, output_hidden_states = True)        
-        cat_output = torch.cat((bert_output[2][-1][:,0, ...], bert_output[2][-2][:,0, ...], bert_output[2][-3][:,0, ...], bert_output[2][-4][:,0, ...]),-1)       
-        outputs = self.dropout(cat_output)        
-        outputs = self.classifier(outputs)
-        return outputs
+        
 
 class DropCatModel_V2(nn.Module):
     def __init__(self, model, model_ckpt):
@@ -295,6 +280,7 @@ class DropCatModel_V2(nn.Module):
                 outputs += (self.classifier(drop(cat_output)) / num_dps)
         return outputs
 
+
 def create_model(model_name:str, model_type:str) -> nn.Module:
     """Create model
 
@@ -305,7 +291,7 @@ def create_model(model_name:str, model_type:str) -> nn.Module:
     Returns:
         nn.Module: model
     """
-    model, tokenizer, model_ckpt = CFG.model_dict[model_name]
+    model, tokenizer, model_ckpt = config.model_dict[model_name]
     if model_type == "4_hidden":
         return HackathonModel(model, model_ckpt)
     elif model_type == "classifier_head":
@@ -322,8 +308,6 @@ def create_model(model_name:str, model_type:str) -> nn.Module:
         return AttentionModel(model, model_ckpt)
     elif model_type == "weight_pool":
         return WLPDropModel(model, model_ckpt)
-    elif model_type == "catmodel":
-        return CatModel(model, model_ckpt)
     elif model_type == "dropcat":
         return DropCatModel_V2(model, model_ckpt)
     return CustomModel(model, model_ckpt)
@@ -339,5 +323,6 @@ def create_tokenizer(name:str) -> Tokenizer:
     Returns:
         Tokenizer: tokenizer
     """
-    model, tokenizer, model_ckpt = CFG.model_dict[name]
+    model, tokenizer, model_ckpt = config.model_dict[name]
     return tokenizer.from_pretrained(model_ckpt)
+

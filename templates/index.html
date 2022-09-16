@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <!-- <link rel="stylesheet" href="/css/styles.css"> -->
+    <link rel="shortcut icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/FPT_logo_2010.svg/1200px-FPT_logo_2010.svg.png"/>
+    <title>Review Analytics Demo</title>
+    <style>
+        .mycustombtn{
+            text-align: center !important;
+            margin: auto;
+                    }
+
+    </style>  
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <style>
+            @-webkit-keyframes fall {
+                0% {
+                    opacity: 0.9;
+                    top: 0
+                }
+                100% {
+                    opacity: 0.2;
+                    top: 100%
+                }
+            }
+
+            @keyframes fall {
+                0% {
+                    opacity: 0.9;
+                    top: 0
+                }
+                100% {
+                    opacity: 0.2;
+                    top: 100%
+                }
+            }
+
+            @-webkit-keyframes blow-soft-left {
+                0% {
+                    margin-left: 0
+                }
+                100% {
+                    margin-left: -50%
+                }
+            }
+
+            @keyframes blow-soft-left {
+                0% {
+                    margin-left: 0
+                }
+                100% {
+                    margin-left: -50%
+                }
+            }
+
+            @-webkit-keyframes blow-medium-left {
+                0% {
+                    margin-left: 0
+                }
+                100% {
+                    margin-left: -100%
+                }
+            }
+
+            @keyframes blow-medium-left {
+                0% {
+                    margin-left: 0
+                }
+                100% {
+                    margin-left: -100%
+                }
+            }
+
+            @-webkit-keyframes blow-soft-right {
+                0% {
+                    margin-left: 0
+                }
+                100% {
+                    margin-left: 50%
+                }
+            }
+
+            @keyframes blow-soft-right {
+                0% {
+                    margin-left: 0
+                }
+                100% {
+                    margin-left: 50%
+                }
+            }
+
+            @-webkit-keyframes blow-medium-right {
+                0% {
+                    margin-left: 0
+                }
+                100% {
+                    margin-left: 100%
+                }
+            }
+
+            @keyframes blow-medium-right {
+                0% {
+                    margin-left: 0
+                }
+                100% {
+                    margin-left: 100%
+                }
+            }
+
+            @-webkit-keyframes sway-0 {
+                0% {
+                    -webkit-transform: rotate(-5deg)
+                }
+                40% {
+                    -webkit-transform: rotate(28deg)
+                }
+                100% {
+                    -webkit-transform: rotate(3deg)
+                }
+            }
+
+            @keyframes sway-0 {
+                0% {
+                    -ms-transform: rotate(-5deg);
+                    transform: rotate(-5deg)
+                }
+                40% {
+                    -ms-transform: rotate(28deg);
+                    transform: rotate(28deg)
+                }
+                100% {
+                    -ms-transform: rotate(3deg);
+                    transform: rotate(3deg)
+                }
+            }
+
+            @-webkit-keyframes sway-1 {
+                0% {
+                    -webkit-transform: rotate(10deg)
+                }
+                40% {
+                    -webkit-transform: rotate(43deg)
+                }
+                100% {
+                    -webkit-transform: rotate(15deg)
+                }
+            }
+
+            @keyframes sway-1 {
+                0% {
+                    -ms-transform: rotate(10deg);
+                    transform: rotate(10deg)
+                }
+                40% {
+                    -ms-transform: rotate(43deg);
+                    transform: rotate(43deg)
+                }
+                100% {
+                    -ms-transform: rotate(15deg);
+                    transform: rotate(15deg)
+                }
+            }
+
+            @-webkit-keyframes sway-2 {
+                0% {
+                    -webkit-transform: rotate(15deg)
+                }
+                40% {
+                    -webkit-transform: rotate(56deg)
+                }
+                100% {
+                    -webkit-transform: rotate(22deg)
+                }
+            }
+
+            @keyframes sway-2 {
+                0% {
+                    -ms-transform: rotate(15deg);
+                    transform: rotate(15deg)
+                }
+                40% {
+                    -ms-transform: rotate(56deg);
+                    transform: rotate(56deg)
+                }
+                100% {
+                    -ms-transform: rotate(22deg);
+                    transform: rotate(22deg)
+                }
+            }
+
+            @-webkit-keyframes sway-3 {
+                0% {
+                    -webkit-transform: rotate(25deg)
+                }
+                40% {
+                    -webkit-transform: rotate(74deg)
+                }
+                100% {
+                    -webkit-transform: rotate(37deg)
+                }
+            }
+
+            @keyframes sway-3 {
+                0% {
+                    -ms-transform: rotate(25deg);
+                    transform: rotate(25deg)
+                }
+                40% {
+                    -ms-transform: rotate(74deg);
+                    transform: rotate(74deg)
+                }
+                100% {
+                    -ms-transform: rotate(37deg);
+                    transform: rotate(37deg)
+                }
+            }
+
+            @-webkit-keyframes sway-4 {
+                0% {
+                    -webkit-transform: rotate(40deg)
+                }
+                40% {
+                    -webkit-transform: rotate(68deg)
+                }
+                100% {
+                    -webkit-transform: rotate(25deg)
+                }
+            }
+
+            @keyframes sway-4 {
+                0% {
+                    -ms-transform: rotate(40deg);
+                    transform: rotate(40deg)
+                }
+                40% {
+                    -ms-transform: rotate(68deg);
+                    transform: rotate(68deg)
+                }
+                100% {
+                    -ms-transform: rotate(25deg);
+                    transform: rotate(25deg)
+                }
+            }
+
+            @-webkit-keyframes sway-5 {
+                0% {
+                    -webkit-transform: rotate(50deg)
+                }
+                40% {
+                    -webkit-transform: rotate(78deg)
+                }
+                100% {
+                    -webkit-transform: rotate(40deg)
+                }
+            }
+
+            @keyframes sway-5 {
+                0% {
+                    -ms-transform: rotate(50deg);
+                    transform: rotate(50deg)
+                }
+                40% {
+                    -ms-transform: rotate(78deg);
+                    transform: rotate(78deg)
+                }
+                100% {
+                    -ms-transform: rotate(40deg);
+                    transform: rotate(40deg)
+                }
+            }
+
+            @-webkit-keyframes sway-6 {
+                0% {
+                    -webkit-transform: rotate(65deg)
+                }
+                40% {
+                    -webkit-transform: rotate(92deg)
+                }
+                100% {
+                    -webkit-transform: rotate(58deg)
+                }
+            }
+
+            @keyframes sway-6 {
+                0% {
+                    -ms-transform: rotate(65deg);
+                    transform: rotate(65deg)
+                }
+                40% {
+                    -ms-transform: rotate(92deg);
+                    transform: rotate(92deg)
+                }
+                100% {
+                    -ms-transform: rotate(58deg);
+                    transform: rotate(58deg)
+                }
+            }
+
+            @-webkit-keyframes sway-7 {
+                0% {
+                    -webkit-transform: rotate(72deg)
+                }
+                40% {
+                    -webkit-transform: rotate(118deg)
+                }
+                100% {
+                    -webkit-transform: rotate(68deg)
+                }
+            }
+
+            @keyframes sway-7 {
+                0% {
+                    -ms-transform: rotate(72deg);
+                    transform: rotate(72deg)
+                }
+                40% {
+                    -ms-transform: rotate(118deg);
+                    transform: rotate(118deg)
+                }
+                100% {
+                    -ms-transform: rotate(68deg);
+                    transform: rotate(68deg)
+                }
+            }
+
+            @-webkit-keyframes sway-8 {
+                0% {
+                    -webkit-transform: rotate(94deg)
+                }
+                40% {
+                    -webkit-transform: rotate(136deg)
+                }
+                100% {
+                    -webkit-transform: rotate(82deg)
+                }
+            }
+
+            @keyframes sway-8 {
+                0% {
+                    -ms-transform: rotate(94deg);
+                    transform: rotate(94deg)
+                }
+                40% {
+                    -ms-transform: rotate(136deg);
+                    transform: rotate(136deg)
+                }
+                100% {
+                    -ms-transform: rotate(82deg);
+                    transform: rotate(82deg)
+                }
+            }
+
+            .sakura {
+                background: -webkit-linear-gradient(120deg, rgba(255, 183, 197, 0.9), rgba(255, 197, 208, 0.9));
+                background: linear-gradient(120deg, rgba(255, 183, 197, 0.9), rgba(255, 197, 208, 0.9));
+                pointer-events: none;
+                position: absolute
+            }
+        </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="http://127.0.0.1:8000/">Review Analytics</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+    </nav>
+    <h1 style="text-align: center;">Review Analytics</h1>
+    <br>
+    <div class="content", style="width: 1000px ;display: block;margin-left: auto;margin-right: auto;">
+        <form action="/", method="POST" >
+            <textarea class="form-control" id="rv" aria-label="With textarea" name="review" rows="3" style="margin-bottom: 10px;"></textarea>
+            <input onclick="myfunc" type="submit" id="submit" value="Predict" style="background: rgb(51, 51, 0);margin: auto;display: block; color: blanchedalmond;">
+        </form>
+        <br>
+        <div class="output">
+          <h2 style="text-align: center;">The rating for this review: </h2>
+        </div>
+    </div>
+    <h5 style="text-align: center;">{{review_sentence | safe}}</p>
+    <br>
+    <h3 style="text-align:center; "> Result</h3>
+    <div class="input" style="padding:10px;">
+      {{ data | safe }}
+    </div>
+    <div class="input" style="padding-top:30%;">
+        
+      </div>
+    <footer class="bg-light text-center text-lg-start" style="position: fixed;bottom: 0;width: 100%;">
+      <!-- Copyright -->
+      <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);">
+        © 2022 Copyright:
+        <a class="text-dark" href="https://github.com/quangdungluong" style="font-weight: bold;">DungLQ12</a> <span>- <a class="text-dark" href="https://github.com/DThanhThong" style="font-weight: bold;">ThongDT3</a></span><span>- <a class="text-dark" href="https://github.com/TPQDat" style="font-weight: bold;">DatTPQ</a></span><span> - FWA.CTA AICamp Batch 8</span>
+      </div>
+      <!-- Copyright -->
+    </footer>
+    <script>
+        $(document).ready(function() {
+            $('#submit').click(function() {
+                var value = document.getElementById('rv').value;
+                var review_sent = '{{ review_sent }}';
+                // console.log(review_sent)
+                // if (value === '' || review_sent) {
+                //     alert('This review is invalid! Please enter another review');
+                // }
+        })
+    });
+    </script>
+</body>
+</html>
