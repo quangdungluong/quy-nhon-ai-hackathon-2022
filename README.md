@@ -15,7 +15,22 @@
 ## Preprocessing:
 - None. That's NLP in 2022
 
-## Usage
+## Installation
+```
+pip -q install vncorenlp
+pip -q install iterative-stratification
+git clone https://github.com/quangdungluong/quy-nhon-ai-hackathon-2022
+cd quy-nhon-ai-hackathon-2022
+git clone https://github.com/vncorenlp/VnCoreNLP
+```
+
+## Demo
+```
+python app.py
+```
+
+## Train
+- Weight: [Google Drive](https://drive.google.com/file/d/1jSVJUhiVzlh6FDL-tf2udepzVa_dzmfA/view?usp=sharing)
 ```
 usage: train.py [-h] [--model_name MODEL_NAME] [--model_type MODEL_TYPE] [--train_path TRAIN_PATH] [--model_ckpt MODEL_CKPT] [--output_path OUTPUT_PATH] [--rdrsegmenter_path RDRSEGMENTER_PATH]
                 [--num_epochs NUM_EPOCHS] [--lr LR] [--dropout DROPOUT] [--increment_dropout_prob INCREMENT_DROPOUT_PROB] [--train_folds TRAIN_FOLDS [TRAIN_FOLDS ...]] [--scheduler_type SCHEDULER_TYPE]
@@ -64,3 +79,6 @@ optional arguments:
   --num_warmup_steps NUM_WARMUP_STEPS
                         number of warmup steps in scheduler
 ```
+
+## Flask App
+![Flask App](./result/demo.PNG)
